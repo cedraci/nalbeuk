@@ -1,6 +1,9 @@
 extends RefCounted
 class_name CombatEncounter
 
+signal state_changed
+signal combat_ended(player_won: bool)
+
 const MAX_HAND_SIZE := 5
 const MAX_ENERGY := 3
 
@@ -51,6 +54,7 @@ func play_card(card: CardResource) -> void:
 	for effect in card.effects:
 		effect.apply(context)
 	_check_combat_over()
+	state_changed.emit()
 
 func end_player_turn() -> void:
 	discard_pile.append_array(hand)
@@ -58,6 +62,7 @@ func end_player_turn() -> void:
 	if not is_over:
 		_run_enemy_turn()
 	_check_combat_over()
+	state_changed.emit()
 
 func get_current_enemy_intent() -> EnemyMove:
 	if enemy_moves.is_empty():
@@ -97,9 +102,13 @@ func _run_enemy_turn() -> void:
 	_check_combat_over()
 
 func _check_combat_over() -> void:
+	if is_over:
+		return
 	if enemy.current_hp <= 0:
 		is_over = true
 		player_won = true
 	elif player.current_hp <= 0:
 		is_over = true
 		player_won = false
+	if is_over:
+		combat_ended.emit(player_won)
