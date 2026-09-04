@@ -44,7 +44,7 @@ func test_playing_a_card_updates_the_view():
 	var encounter := CombatEncounter.new(player, deck, enemy, [_make_attack_move(3)])
 	scene.start(encounter)
 	var card := encounter.hand[0]
-	scene._on_hand_card_clicked(card)
+	scene.hand_view.card_clicked.emit(card)
 	assert_eq(scene.enemy_panel.hp_label.text, "HP: 17 / 20")
 
 func test_combat_ended_shows_result_overlay_with_win_message():
@@ -55,7 +55,7 @@ func test_combat_ended_shows_result_overlay_with_win_message():
 	var deck: Array[CardResource] = [_make_strike(3)]
 	var encounter := CombatEncounter.new(player, deck, enemy, [_make_attack_move(3)])
 	scene.start(encounter)
-	scene._on_hand_card_clicked(encounter.hand[0])
+	scene.hand_view.card_clicked.emit(encounter.hand[0])
 	assert_false(scene.turn_ui_container.visible)
 	assert_true(scene.result_container.visible)
 	assert_eq(scene.result_label.text, "You Won")
@@ -64,5 +64,30 @@ func test_play_again_button_emits_play_again_requested():
 	var scene := CombatScene.new()
 	add_child_autofree(scene)
 	watch_signals(scene)
-	scene._on_play_again_pressed()
+	scene.play_again_button.pressed.emit()
 	assert_signal_emitted(scene, "play_again_requested")
+
+func test_end_turn_button_starts_new_player_turn_when_combat_continues():
+	var scene := CombatScene.new()
+	add_child_autofree(scene)
+	var player := _make_actor(20)
+	var enemy := _make_actor(20)
+	var deck: Array[CardResource] = [_make_strike(3)]
+	var encounter := CombatEncounter.new(player, deck, enemy, [_make_attack_move(3)])
+	scene.start(encounter)
+	scene.end_turn_button.pressed.emit()
+	assert_eq(scene.energy_label.text, "Energy: 3 / 3")
+	assert_eq(scene.player_panel.hp_label.text, "HP: 17 / 20")
+
+func test_end_turn_button_shows_result_overlay_with_loss_message():
+	var scene := CombatScene.new()
+	add_child_autofree(scene)
+	var player := _make_actor(3)
+	var enemy := _make_actor(20)
+	var deck: Array[CardResource] = [_make_strike(3)]
+	var encounter := CombatEncounter.new(player, deck, enemy, [_make_attack_move(5)])
+	scene.start(encounter)
+	scene.end_turn_button.pressed.emit()
+	assert_eq(scene.result_label.text, "You Lost")
+	assert_true(scene.result_container.visible)
+	assert_false(scene.turn_ui_container.visible)

@@ -49,11 +49,12 @@ this plan's hardcoded bootstrap with real run/map wiring.
 Two small additions to Plan 1's code, otherwise unchanged:
 
 - **`CombatEncounter` signals:**
-  - `signal state_changed` — emitted at the end of `play_card`,
-    `end_player_turn`, and internally after `_run_enemy_turn()`
-    resolves. Views redraw fully from current state on every emission;
-    there is no per-field diffing and no animation choreography in this
-    pass.
+  - `signal state_changed` — emitted once at the end of `play_card()`
+    and once at the end of `end_player_turn()` (which itself runs the
+    enemy turn synchronously before returning, so a single
+    `end_player_turn()` call still yields exactly one emission). Views
+    redraw fully from current state on every emission; there is no
+    per-field diffing and no animation choreography in this pass.
   - `signal combat_ended(player_won: bool)` — emitted exactly once, the
     moment `_check_combat_over()` first flips `is_over` from `false` to
     `true`. Never emitted again afterward even if other methods are

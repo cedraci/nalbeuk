@@ -9,6 +9,7 @@ func _ready() -> void:
 
 func _start_new_fight() -> void:
 	if combat_scene != null:
+		remove_child(combat_scene)
 		combat_scene.queue_free()
 
 	var class_res := DwarfContent.get_class_resource()

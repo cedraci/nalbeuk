@@ -5,6 +5,10 @@ signal card_clicked(card: CardResource)
 
 func display(hand: Array[CardResource], energy: int) -> void:
 	for child in get_children():
+		# queue_free(), not free(): this runs from inside a card button's own
+		# "pressed" handler chain (state_changed -> _refresh -> display), so
+		# freeing immediately would destroy a node still executing its own
+		# signal dispatch.
 		remove_child(child)
 		child.queue_free()
 	for card in hand:
