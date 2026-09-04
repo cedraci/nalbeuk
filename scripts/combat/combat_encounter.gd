@@ -17,12 +17,19 @@ var energy: int = 0
 var is_over: bool = false
 var player_won: bool = false
 
-func _init(p_player: CombatActor, p_deck: Array[CardResource], p_enemy: CombatActor, p_enemy_moves: Array[EnemyMove]) -> void:
+var rng: RandomNumberGenerator
+
+func _init(p_player: CombatActor, p_deck: Array[CardResource], p_enemy: CombatActor, p_enemy_moves: Array[EnemyMove], p_rng: RandomNumberGenerator = null) -> void:
 	player = p_player
 	enemy = p_enemy
 	enemy_moves = p_enemy_moves
+	if p_rng != null:
+		rng = p_rng
+	else:
+		rng = RandomNumberGenerator.new()
+		rng.randomize()
 	draw_pile = p_deck.duplicate()
-	draw_pile.shuffle()
+	_shuffle_draw_pile()
 
 func start_player_turn() -> void:
 	energy = MAX_ENERGY
@@ -53,6 +60,9 @@ func end_player_turn() -> void:
 	_check_combat_over()
 
 func get_current_enemy_intent() -> EnemyMove:
+	if enemy_moves.is_empty():
+		push_error("EnemyMove list is empty for this encounter")
+		return null
 	return enemy_moves[enemy_move_index % enemy_moves.size()]
 
 func _draw_hand() -> void:
@@ -61,13 +71,25 @@ func _draw_hand() -> void:
 			if discard_pile.is_empty():
 				break
 			draw_pile = discard_pile.duplicate()
-			draw_pile.shuffle()
+			_shuffle_draw_pile()
 			discard_pile.clear()
 		hand.append(draw_pile.pop_back())
+
+func _shuffle_draw_pile() -> void:
+	# Fisher-Yates shuffle driven by `rng` so draws are reproducible when a
+	# seeded RandomNumberGenerator is supplied to _init (Array.shuffle() always
+	# consumes the engine-global RNG stream, not an external instance).
+	for i in range(draw_pile.size() - 1, 0, -1):
+		var j: int = rng.randi_range(0, i)
+		var tmp := draw_pile[i]
+		draw_pile[i] = draw_pile[j]
+		draw_pile[j] = tmp
 
 func _run_enemy_turn() -> void:
 	enemy.clear_block()
 	var move := get_current_enemy_intent()
+	if move == null:
+		return
 	var context := EffectContext.new(enemy, player)
 	for effect in move.effects:
 		effect.apply(context)
