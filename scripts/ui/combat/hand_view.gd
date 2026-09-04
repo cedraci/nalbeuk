@@ -5,6 +5,7 @@ signal card_clicked(card: CardResource)
 
 func display(hand: Array[CardResource], energy: int) -> void:
 	for child in get_children():
+		remove_child(child)
 		child.queue_free()
 	for card in hand:
 		var button := Button.new()

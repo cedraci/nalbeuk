@@ -32,3 +32,12 @@ func test_clicking_a_card_button_emits_card_clicked():
 	var button: Button = hand_view.get_child(0)
 	button.pressed.emit()
 	assert_signal_emitted_with_parameters(hand_view, "card_clicked", [card])
+
+func test_display_called_twice_leaves_only_current_hand_children():
+	var hand_view := HandView.new()
+	add_child_autofree(hand_view)
+	var first_hand: Array[CardResource] = [_make_card("Strike", 1), _make_card("Guard", 1)]
+	hand_view.display(first_hand, 3)
+	var second_hand: Array[CardResource] = [_make_card("Bolt", 2)]
+	hand_view.display(second_hand, 3)
+	assert_eq(hand_view.get_child_count(), 1, "Only the second display() call's single card should remain as a child; remove_child() must detach the old buttons immediately, not just queue_free() them.")
