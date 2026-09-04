@@ -19,3 +19,16 @@ func test_cave_rat_enemy_resource_has_expected_shape():
 	assert_eq(enemy_res.display_name, "Cave Rat")
 	assert_eq(enemy_res.max_hp, 18)
 	assert_eq(enemy_res.moves.size(), 2)
+
+func test_dwarf_cards_have_descriptions():
+	var class_res := DwarfContent.get_class_resource()
+	for card in class_res.starting_deck:
+		assert_ne(card.description, "", "Card '%s' should have a non-empty description." % card.display_name)
+
+func test_cave_rat_moves_have_descriptions_and_display_values():
+	var enemy_res := CaveRatContent.get_enemy_resource()
+	for move in enemy_res.moves:
+		assert_ne(move.description, "", "A Cave Rat move should have a non-empty description.")
+	# Bite is a plain attack; its display_value should show the damage number.
+	var bite: EnemyMove = enemy_res.moves[0]
+	assert_eq(bite.display_value, 5)

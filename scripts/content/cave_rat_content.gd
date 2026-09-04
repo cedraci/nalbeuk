@@ -15,6 +15,8 @@ static func _make_bite_move() -> EnemyMove:
 	var effect := DamageEffect.new()
 	effect.amount = 5
 	move.effects = [effect]
+	move.description = "The Cave Rat lunges with its teeth."
+	move.display_value = 5
 	return move
 
 static func _make_screech_move() -> EnemyMove:
@@ -25,4 +27,5 @@ static func _make_screech_move() -> EnemyMove:
 	effect.stacks = 1
 	effect.apply_to_source = false
 	move.effects = [effect]
+	move.description = "The Cave Rat lets out a piercing screech, weakening its foe."
 	return move

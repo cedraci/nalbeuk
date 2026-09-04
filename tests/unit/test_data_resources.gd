@@ -42,3 +42,15 @@ func test_class_resource_holds_starting_deck():
 	class_res.starting_deck = [card]
 	assert_eq(class_res.base_hp, 20)
 	assert_eq(class_res.starting_deck.size(), 1)
+
+func test_card_resource_has_description_field():
+	var card := CardResource.new()
+	card.description = "Deal 6 damage."
+	assert_eq(card.description, "Deal 6 damage.")
+
+func test_enemy_move_has_description_and_display_value_fields():
+	var move := EnemyMove.new()
+	move.description = "Winds up a heavy bite."
+	move.display_value = 5
+	assert_eq(move.description, "Winds up a heavy bite.")
+	assert_eq(move.display_value, 5)

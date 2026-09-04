@@ -10,3 +10,4 @@ enum TargetType { SINGLE_ENEMY, SELF }
 @export var card_type: CardType = CardType.STRIKE
 @export var target_type: TargetType = TargetType.SINGLE_ENEMY
 @export var effects: Array[CardEffect] = []
+@export var description: String = ""

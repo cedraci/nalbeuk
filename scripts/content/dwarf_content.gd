@@ -23,6 +23,7 @@ static func _make_strike_card() -> CardResource:
 	var effect := DamageEffect.new()
 	effect.amount = 6
 	card.effects = [effect]
+	card.description = "Deal 6 damage."
 	return card
 
 static func _make_guard_card() -> CardResource:
@@ -35,4 +36,5 @@ static func _make_guard_card() -> CardResource:
 	var effect := BlockEffect.new()
 	effect.amount = 5
 	card.effects = [effect]
+	card.description = "Gain 5 Block."
 	return card
