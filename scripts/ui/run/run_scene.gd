@@ -60,6 +60,8 @@ func _on_map_node_selected(node: MapNode) -> void:
 			_start_rest(node)
 		MapNode.NodeType.SHOP:
 			_start_shop(node)
+		MapNode.NodeType.TREASURE:
+			_start_treasure(node)
 
 func _start_combat(node: MapNode) -> void:
 	var encounter := RunState.build_encounter_for_node(node)
@@ -75,6 +77,10 @@ func _on_combat_dismissed(player_won: bool, node: MapNode) -> void:
 		var xp_reward: int = _xp_reward_for(node.node_type)
 		RunState.apply_combat_reward(gold_reward, combat_scene.encounter.player.current_hp)
 		RunState.grant_xp(xp_reward)
+		if node.node_type == MapNode.NodeType.ELITE:
+			RunState.grant_equipment(DwarfEquipment.get_random_equipment(RunState.rng))
+		elif node.node_type == MapNode.NodeType.BOSS:
+			RunState.grant_relic(DwarfRelics.get_random_relic(RunState.rng))
 		RunState.mark_node_visited_and_advance(node)
 		if node.node_type == MapNode.NodeType.BOSS:
 			_show_victory()
@@ -120,6 +126,11 @@ func _start_shop(node: MapNode) -> void:
 	shop_scene.set_anchors_preset(Control.PRESET_FULL_RECT)
 	shop_scene.node_completed.connect(_on_node_completed.bind(node))
 	_swap_to(shop_scene)
+
+func _start_treasure(node: MapNode) -> void:
+	RunState.grant_relic(DwarfRelics.get_random_relic(RunState.rng))
+	RunState.mark_node_visited_and_advance(node)
+	_show_map()
 
 func _on_node_completed(node: MapNode) -> void:
 	RunState.mark_node_visited_and_advance(node)

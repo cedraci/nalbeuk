@@ -127,3 +127,43 @@ func test_winning_an_elite_node_grants_enough_xp_to_level_up():
 	scene.combat_scene.combat_dismissed.emit(true)
 	assert_eq(RunState.level, 2)
 	assert_eq(RunState.skill_points, 1)
+
+func test_selecting_a_treasure_node_grants_a_relic_and_returns_to_map():
+	var scene := RunScene.new()
+	add_child_autofree(scene)
+	var treasure_node := MapNode.new(9999, MapNode.NodeType.TREASURE, 0)
+	var relics_before: int = RunState.unlocked_relics.size()
+	scene.map_view.node_selected.emit(treasure_node)
+	assert_eq(RunState.unlocked_relics.size(), relics_before + 1)
+	assert_true(treasure_node.visited)
+	assert_eq(RunState.current_node, treasure_node)
+	assert_eq(scene.map_view.get_parent(), scene)
+
+func test_winning_an_elite_node_grants_equipment():
+	var scene := RunScene.new()
+	add_child_autofree(scene)
+	var elite_node := MapNode.new(9999, MapNode.NodeType.ELITE, 0)
+	var owned_before: int = RunState.owned_equipment.size()
+	scene.map_view.node_selected.emit(elite_node)
+	scene.combat_scene.combat_dismissed.emit(true)
+	assert_eq(RunState.owned_equipment.size(), owned_before + 1)
+
+func test_winning_the_boss_node_grants_a_relic():
+	var scene := RunScene.new()
+	add_child_autofree(scene)
+	var boss_node := MapNode.new(9999, MapNode.NodeType.BOSS, 0)
+	var relics_before: int = RunState.unlocked_relics.size()
+	scene.map_view.node_selected.emit(boss_node)
+	scene.combat_scene.combat_dismissed.emit(true)
+	assert_eq(RunState.unlocked_relics.size(), relics_before + 1)
+
+func test_winning_a_plain_combat_node_grants_neither_equipment_nor_relics():
+	var scene := RunScene.new()
+	add_child_autofree(scene)
+	var combat_node := MapNode.new(9999, MapNode.NodeType.COMBAT, 0)
+	var owned_before: int = RunState.owned_equipment.size()
+	var relics_before: int = RunState.unlocked_relics.size()
+	scene.map_view.node_selected.emit(combat_node)
+	scene.combat_scene.combat_dismissed.emit(true)
+	assert_eq(RunState.owned_equipment.size(), owned_before)
+	assert_eq(RunState.unlocked_relics.size(), relics_before)
