@@ -10,6 +10,7 @@ var victory_scene: VictoryScene
 var game_over_scene: GameOverScene
 var skill_tree_scene: SkillTreeScene
 var inventory_scene: InventoryScene
+var camp_scene: CampScene
 
 var _current_child: Control
 
@@ -21,8 +22,9 @@ func _ready() -> void:
 	map_view.skill_tree_requested.connect(_on_skill_tree_requested)
 	map_view.inventory_requested.connect(_on_inventory_requested)
 	add_child(map_view)
-	RunState.start_new_run(DwarfContent.get_class_resource())
-	_show_map()
+	SaveManager.load_meta()
+	RunState.enter_camp(DwarfContent.get_class_resource())
+	_show_camp()
 
 func _swap_to(node: Control) -> void:
 	if _current_child != null and _current_child != map_view and _current_child.get_parent() == self:
@@ -43,6 +45,25 @@ func _show_map() -> void:
 	map_view.display(RunState.map, RunState.current_node)
 	_swap_to(map_view)
 
+func _show_camp() -> void:
+	camp_scene = CampScene.new()
+	camp_scene.set_anchors_preset(Control.PRESET_FULL_RECT)
+	camp_scene.skill_tree_requested.connect(_on_skill_tree_requested)
+	camp_scene.inventory_requested.connect(_on_inventory_requested)
+	camp_scene.run_requested.connect(_on_run_requested)
+	_swap_to(camp_scene)
+
+# Where "Back" goes: the map during a run, Camp between runs.
+func _show_home() -> void:
+	if RunState.in_run:
+		_show_map()
+	else:
+		_show_camp()
+
+func _on_run_requested() -> void:
+	RunState.start_new_run(DwarfContent.get_class_resource())
+	_show_map()
+
 func _on_skill_tree_requested() -> void:
 	skill_tree_scene = SkillTreeScene.new()
 	skill_tree_scene.set_anchors_preset(Control.PRESET_FULL_RECT)
@@ -50,7 +71,7 @@ func _on_skill_tree_requested() -> void:
 	_swap_to(skill_tree_scene)
 
 func _on_skill_tree_back_requested() -> void:
-	_show_map()
+	_show_home()
 
 func _on_inventory_requested() -> void:
 	inventory_scene = InventoryScene.new()
@@ -59,7 +80,7 @@ func _on_inventory_requested() -> void:
 	_swap_to(inventory_scene)
 
 func _on_inventory_back_requested() -> void:
-	_show_map()
+	_show_home()
 
 func _on_map_node_selected(node: MapNode) -> void:
 	match node.node_type:
@@ -94,12 +115,12 @@ func _on_combat_dismissed(player_won: bool, node: MapNode) -> void:
 			RunState.grant_relic(DwarfRelics.get_random_relic(RunState.rng))
 		RunState.mark_node_visited_and_advance(node)
 		if node.node_type == MapNode.NodeType.BOSS:
-			_show_victory()
+			_show_victory(RunState.finish_run(true))
 		else:
 			_show_map()
 	else:
 		RunState.current_floor = node.floor
-		_show_game_over()
+		_show_game_over(RunState.finish_run(false))
 
 func _gold_reward_for(node_type: MapNode.NodeType) -> int:
 	match node_type:
@@ -147,18 +168,16 @@ func _on_node_completed(node: MapNode) -> void:
 	RunState.mark_node_visited_and_advance(node)
 	_show_map()
 
-func _show_victory() -> void:
+func _show_victory(outcome: RunOutcome) -> void:
 	victory_scene = VictoryScene.new()
+	victory_scene.outcome = outcome
 	victory_scene.set_anchors_preset(Control.PRESET_FULL_RECT)
-	victory_scene.new_run_requested.connect(_on_new_run_requested)
+	victory_scene.camp_requested.connect(_show_camp)
 	_swap_to(victory_scene)
 
-func _show_game_over() -> void:
+func _show_game_over(outcome: RunOutcome) -> void:
 	game_over_scene = GameOverScene.new()
+	game_over_scene.outcome = outcome
 	game_over_scene.set_anchors_preset(Control.PRESET_FULL_RECT)
-	game_over_scene.new_run_requested.connect(_on_new_run_requested)
+	game_over_scene.camp_requested.connect(_show_camp)
 	_swap_to(game_over_scene)
-
-func _on_new_run_requested() -> void:
-	RunState.start_new_run(DwarfContent.get_class_resource())
-	_show_map()
