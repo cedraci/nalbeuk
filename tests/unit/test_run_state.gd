@@ -537,7 +537,9 @@ func test_failed_unlock_does_not_touch_meta_state():
 	var root: SkillNode = DwarfSkillTree.get_node_by_id(&"dwarven_grit")
 	assert_false(RunState.unlock_skill_node(root))
 	assert_eq(MetaState.unlocked_skill_nodes.size(), 0)
-	assert_false(SaveManager.load_game(), "Nothing was saved.")
+	# start_new_run's own checkpoint already wrote a save file (Task 5), so a
+	# disk file existing is no longer proof this action itself saved anything;
+	# the in-memory assertion above is what this test actually cares about.
 
 func test_gear_changes_inside_a_run_are_not_written_through():
 	RunState.start_new_run(DwarfContent.get_class_resource())
@@ -546,7 +548,9 @@ func test_gear_changes_inside_a_run_are_not_written_through():
 	RunState.equip_item(sword)
 	assert_eq(MetaState.owned_equipment_ids.size(), 0)
 	assert_eq(MetaState.equipped_weapon_id, &"")
-	assert_false(SaveManager.load_game(), "Nothing was saved.")
+	# start_new_run's own checkpoint already wrote a save file (Task 5), so a
+	# disk file existing is no longer proof this action itself saved anything;
+	# the in-memory assertions above are what this test actually cares about.
 
 func test_gear_changes_at_camp_are_written_through_and_saved():
 	MetaState.owned_equipment_ids = [&"rusty_shortsword", &"chainmail"]
@@ -632,3 +636,104 @@ func test_finish_run_outside_a_run_is_a_no_op():
 	assert_eq(outcome.xp_lost, 0)
 	assert_eq(RunState.owned_equipment.size(), 1, "Nothing was wiped.")
 	assert_eq(MetaState.owned_equipment_ids, [&"chainmail"] as Array[StringName])
+
+func test_start_new_run_leaves_a_snapshot_in_memory_and_on_disk():
+	RunState.start_new_run(DwarfContent.get_class_resource())
+	assert_true(SaveManager.has_run_snapshot())
+	assert_eq(int(SaveManager.run_snapshot["current_node_id"]), RunState.current_node.id)
+	SaveManager.run_snapshot = null
+	assert_true(SaveManager.load_game())
+	assert_true(SaveManager.has_run_snapshot(), "The snapshot was written to disk.")
+
+func test_advancing_to_a_node_refreshes_the_snapshot():
+	RunState.start_new_run(DwarfContent.get_class_resource())
+	var next_node: MapNode = RunState.map.floors[1][0]
+	RunState.gold = 33
+	RunState.mark_node_visited_and_advance(next_node)
+	assert_eq(int(SaveManager.run_snapshot["current_node_id"]), next_node.id)
+	assert_eq(int(SaveManager.run_snapshot["gold"]), 33)
+	var visited_in_snapshot: bool = false
+	for floor_nodes in SaveManager.run_snapshot["map"]["floors"]:
+		for raw_node in floor_nodes:
+			if int(raw_node["id"]) == next_node.id:
+				visited_in_snapshot = bool(raw_node["visited"])
+	assert_true(visited_in_snapshot)
+
+func test_mid_run_xp_save_does_not_change_the_snapshot():
+	RunState.start_new_run(DwarfContent.get_class_resource())
+	var hp_in_snapshot: int = int(SaveManager.run_snapshot["player_current_hp"])
+	RunState.player_current_hp = 3
+	RunState.grant_xp(5)
+	assert_eq(int(SaveManager.run_snapshot["player_current_hp"]), hp_in_snapshot, "Only checkpoints capture; write-through saves re-write the cached snapshot unchanged.")
+
+func test_finish_run_clears_the_snapshot_in_memory_and_on_disk():
+	RunState.start_new_run(DwarfContent.get_class_resource())
+	RunState.finish_run(true)
+	assert_false(SaveManager.has_run_snapshot())
+	SaveManager.run_snapshot = {"stale": true}
+	assert_true(SaveManager.load_game())
+	assert_false(SaveManager.has_run_snapshot(), "The file was written with run = null.")
+
+func test_resume_run_returns_false_when_nothing_is_suspended():
+	RunState.enter_camp(DwarfContent.get_class_resource())
+	assert_false(RunState.resume_run(DwarfContent.get_class_resource()))
+	assert_false(RunState.in_run)
+	assert_null(RunState.map)
+
+func test_resume_run_restores_the_run_including_gear_found_during_it():
+	MetaState.level = 2
+	RunState.start_new_run(DwarfContent.get_class_resource())
+	var next_node: MapNode = RunState.map.floors[1][0]
+	RunState.grant_equipment(DwarfEquipment.get_by_id(&"chainmail"))
+	RunState.player_current_hp = 11
+	RunState.gold = 21
+	RunState.mark_node_visited_and_advance(next_node)
+	var saved_node_id: int = next_node.id
+	RunState.enter_camp(DwarfContent.get_class_resource())
+	assert_eq(RunState.owned_equipment.size(), 0, "At Camp the uncommitted run gear is not in MetaState.")
+	assert_true(RunState.resume_run(DwarfContent.get_class_resource()))
+	assert_true(RunState.in_run)
+	assert_eq(RunState.level, 2)
+	assert_eq(RunState.current_node.id, saved_node_id)
+	assert_eq(RunState.player_current_hp, 11)
+	assert_eq(RunState.gold, 21)
+	assert_eq(RunState.owned_equipment.size(), 1)
+	assert_eq(RunState.owned_equipment[0].id, &"chainmail")
+
+func test_resume_run_returns_false_for_a_broken_snapshot():
+	RunState.start_new_run(DwarfContent.get_class_resource())
+	SaveManager.run_snapshot["current_node_id"] = 9999
+	RunState.enter_camp(DwarfContent.get_class_resource())
+	assert_false(RunState.resume_run(DwarfContent.get_class_resource()))
+	assert_false(RunState.in_run)
+	assert_null(RunState.map)
+
+func test_abandon_saved_run_applies_the_death_rules_to_the_suspended_run():
+	MetaState.owned_equipment_ids = [&"leather_vest"]
+	RunState.start_new_run(DwarfContent.get_class_resource())
+	RunState.grant_equipment(DwarfEquipment.get_by_id(&"chainmail"))
+	RunState.grant_xp(10)  # writes through; XP is not in the snapshot
+	RunState.mark_node_visited_and_advance(RunState.map.floors[1][0])
+	RunState.enter_camp(DwarfContent.get_class_resource())
+	var outcome := RunState.abandon_saved_run()
+	assert_true(outcome.abandoned)
+	assert_false(outcome.victory)
+	assert_eq(outcome.gear_lost, 2, "Gear from before the run and gear found during it are both lost.")
+	assert_eq(outcome.xp_lost, 5)
+	assert_false(RunState.in_run)
+	assert_false(SaveManager.has_run_snapshot())
+	assert_eq(MetaState.owned_equipment_ids.size(), 0)
+	assert_eq(MetaState.xp, 5)
+
+func test_abandon_saved_run_with_a_broken_snapshot_discards_it_without_penalty():
+	MetaState.owned_equipment_ids = [&"leather_vest"]
+	RunState.start_new_run(DwarfContent.get_class_resource())
+	RunState.grant_xp(10)  # writes through; XP is not in the snapshot
+	SaveManager.run_snapshot["current_node_id"] = 9999
+	RunState.enter_camp(DwarfContent.get_class_resource())
+	var outcome := RunState.abandon_saved_run()
+	assert_false(outcome.abandoned)
+	assert_eq(outcome.gear_lost, 0)
+	assert_false(SaveManager.has_run_snapshot())
+	assert_eq(MetaState.owned_equipment_ids, [&"leather_vest"] as Array[StringName])
+	assert_eq(MetaState.xp, 10)

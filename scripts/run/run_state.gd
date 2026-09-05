@@ -55,6 +55,7 @@ func start_new_run(p_class_resource: ClassResource) -> void:
 	current_floor = 0
 	current_node = map.floors[0][0]
 	in_run = true
+	_checkpoint()
 
 func enter_camp(p_class_resource: ClassResource) -> void:
 	class_resource = p_class_resource
@@ -67,6 +68,36 @@ func enter_camp(p_class_resource: ClassResource) -> void:
 	current_floor = 0
 	current_node = null
 	in_run = false
+
+func resume_run(p_class_resource: ClassResource) -> bool:
+	if not SaveManager.has_run_snapshot():
+		return false
+	class_resource = p_class_resource
+	persistent_stats = PersistentStats.new()
+	load_character_from_meta()
+	_reset_run_only_state()
+	if not RunSnapshot.restore(SaveManager.run_snapshot):
+		push_warning("RunState.resume_run: snapshot could not be restored")
+		return false
+	in_run = true
+	return true
+
+# Abandon = the death rules applied to the suspended run. A snapshot that
+# cannot be restored is discarded with no penalty (not the player's fault).
+func abandon_saved_run() -> RunOutcome:
+	if not resume_run(class_resource):
+		SaveManager.run_snapshot = null
+		SaveManager.save_game()
+		return RunOutcome.new()
+	var outcome := finish_run(false)
+	outcome.abandoned = true
+	return outcome
+
+# The only two places that capture a snapshot are start_new_run and
+# mark_node_visited_and_advance — "back on the map".
+func _checkpoint() -> void:
+	SaveManager.run_snapshot = RunSnapshot.capture()
+	SaveManager.save_game()
 
 func load_character_from_meta() -> void:
 	level = MetaState.level
@@ -215,6 +246,7 @@ func finish_run(victory: bool) -> RunOutcome:
 	_commit_equipment()
 	_commit_never_lost()
 	in_run = false
+	SaveManager.run_snapshot = null
 	SaveManager.save_game()
 	return outcome
 
@@ -313,3 +345,4 @@ func mark_node_visited_and_advance(node: MapNode) -> void:
 	node.visited = true
 	current_node = node
 	current_floor = node.floor
+	_checkpoint()
