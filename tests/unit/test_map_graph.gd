@@ -60,3 +60,15 @@ func test_connections_only_point_at_the_immediately_next_floor():
 			for node in current_floor:
 				for connected_id in node.connections:
 					assert_true(next_floor_ids.has(connected_id), "seed %d floor %d" % [seed_value, f])
+
+func test_treasure_nodes_are_reachable_across_enough_seeds():
+	var found_treasure := false
+	for seed_value in range(1, 21):
+		var rng := RandomNumberGenerator.new()
+		rng.seed = seed_value
+		var graph := MapGraph.generate(rng)
+		for floor_nodes in graph.floors:
+			for node in floor_nodes:
+				if node.node_type == MapNode.NodeType.TREASURE:
+					found_treasure = true
+	assert_true(found_treasure, "TREASURE should appear in at least one of 20 generated maps.")

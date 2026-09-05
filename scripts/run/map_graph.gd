@@ -44,6 +44,7 @@ static func _pick_weighted_node_type(rng: RandomNumberGenerator, rest_already_us
 		MapNode.NodeType.EVENT,
 		MapNode.NodeType.EVENT,
 		MapNode.NodeType.SHOP,
+		MapNode.NodeType.TREASURE,
 	]
 	if not rest_already_used:
 		pool.append(MapNode.NodeType.REST)

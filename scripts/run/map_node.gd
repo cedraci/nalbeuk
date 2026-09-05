@@ -1,7 +1,7 @@
 extends RefCounted
 class_name MapNode
 
-enum NodeType { COMBAT, ELITE, EVENT, REST, SHOP, BOSS }
+enum NodeType { COMBAT, ELITE, EVENT, REST, SHOP, BOSS, TREASURE }
 
 var id: int
 var node_type: NodeType
