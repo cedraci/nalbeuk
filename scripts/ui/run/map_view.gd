@@ -3,9 +3,11 @@ class_name MapView
 
 signal node_selected(node: MapNode)
 signal skill_tree_requested
+signal inventory_requested
 
 var status_label: Label
 var skill_tree_button: Button
+var inventory_button: Button
 var floors_container: HBoxContainer
 
 func _ready() -> void:
@@ -37,6 +39,11 @@ func display(map: MapGraph, current_node: MapNode) -> void:
 	skill_tree_button.pressed.connect(_on_skill_tree_button_pressed)
 	header_hbox.add_child(skill_tree_button)
 
+	inventory_button = Button.new()
+	inventory_button.text = "Inventory"
+	inventory_button.pressed.connect(_on_inventory_button_pressed)
+	header_hbox.add_child(inventory_button)
+
 	var reachable_ids: Array[int] = []
 	if current_node.visited:
 		reachable_ids = current_node.connections.duplicate()
@@ -67,3 +74,6 @@ func _on_node_button_pressed(node: MapNode) -> void:
 
 func _on_skill_tree_button_pressed() -> void:
 	skill_tree_requested.emit()
+
+func _on_inventory_button_pressed() -> void:
+	inventory_requested.emit()

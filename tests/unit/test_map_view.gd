@@ -110,3 +110,15 @@ func test_display_shows_max_level_without_an_xp_fraction():
 	graph.floors = [[node_a] as Array[MapNode]]
 	map_view.display(graph, node_a)
 	assert_true(map_view.status_label.text.contains("MAX"))
+
+func test_display_adds_an_inventory_button_that_emits_inventory_requested():
+	RunState.start_new_run(DwarfContent.get_class_resource())
+	var map_view := MapView.new()
+	add_child_autofree(map_view)
+	var node_a := MapNode.new(0, MapNode.NodeType.COMBAT, 0)
+	var graph := MapGraph.new()
+	graph.floors = [[node_a] as Array[MapNode]]
+	map_view.display(graph, node_a)
+	watch_signals(map_view)
+	map_view.inventory_button.pressed.emit()
+	assert_signal_emitted(map_view, "inventory_requested")
