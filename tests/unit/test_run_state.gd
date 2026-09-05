@@ -569,3 +569,66 @@ func test_event_xp_writes_through():
 	choice.xp_delta = 5
 	RunState.apply_event_choice(choice)
 	assert_eq(MetaState.xp, 5)
+
+func test_finish_run_victory_commits_gear_found_during_the_run():
+	RunState.start_new_run(DwarfContent.get_class_resource())
+	var hammer: EquipmentResource = DwarfEquipment.get_by_id(&"dwarven_warhammer")
+	RunState.grant_equipment(hammer)
+	RunState.equip_item(hammer)
+	RunState.grant_xp(5)
+	var outcome := RunState.finish_run(true)
+	assert_true(outcome.victory)
+	assert_eq(outcome.gear_lost, 0)
+	assert_eq(outcome.xp_lost, 0)
+	assert_false(RunState.in_run)
+	assert_eq(MetaState.owned_equipment_ids, [&"dwarven_warhammer"] as Array[StringName])
+	assert_eq(MetaState.equipped_weapon_id, &"dwarven_warhammer")
+	MetaState.reset()
+	assert_true(SaveManager.load_meta())
+	assert_eq(MetaState.equipped_weapon_id, &"dwarven_warhammer")
+	assert_eq(MetaState.xp, 5)
+
+func test_finish_run_death_wipes_gear_and_halves_xp_but_keeps_level_and_skills():
+	MetaState.level = 2
+	MetaState.owned_equipment_ids = [&"leather_vest"]
+	MetaState.equipped_armor_id = &"leather_vest"
+	MetaState.unlocked_skill_nodes = [&"dwarven_grit"]
+	RunState.start_new_run(DwarfContent.get_class_resource())
+	RunState.grant_equipment(DwarfEquipment.get_by_id(&"rusty_shortsword"))
+	RunState.xp = 15
+	var outcome := RunState.finish_run(false)
+	assert_false(outcome.victory)
+	assert_eq(outcome.gear_lost, 2, "Gear owned before the run and gear found during it are both lost.")
+	assert_eq(outcome.xp_lost, 8)
+	assert_eq(RunState.xp, 7)
+	assert_eq(RunState.owned_equipment.size(), 0)
+	assert_null(RunState.equipped_armor)
+	assert_eq(RunState.level, 2)
+	assert_eq(RunState.unlocked_skill_nodes, [&"dwarven_grit"] as Array[StringName])
+	assert_false(RunState.in_run)
+	assert_eq(MetaState.owned_equipment_ids.size(), 0)
+	assert_eq(MetaState.equipped_armor_id, &"")
+	assert_eq(MetaState.xp, 7)
+	assert_eq(MetaState.level, 2)
+	assert_eq(MetaState.unlocked_skill_nodes, [&"dwarven_grit"] as Array[StringName])
+	MetaState.reset()
+	assert_true(SaveManager.load_meta())
+	assert_eq(MetaState.xp, 7)
+	assert_eq(MetaState.owned_equipment_ids.size(), 0)
+
+func test_finish_run_death_with_zero_xp_loses_nothing_extra():
+	RunState.start_new_run(DwarfContent.get_class_resource())
+	var outcome := RunState.finish_run(false)
+	assert_eq(outcome.xp_lost, 0)
+	assert_eq(outcome.gear_lost, 0)
+	assert_eq(RunState.xp, 0)
+
+func test_finish_run_outside_a_run_is_a_no_op():
+	MetaState.owned_equipment_ids = [&"chainmail"]
+	RunState.enter_camp(DwarfContent.get_class_resource())
+	var outcome := RunState.finish_run(false)
+	assert_false(outcome.victory)
+	assert_eq(outcome.gear_lost, 0)
+	assert_eq(outcome.xp_lost, 0)
+	assert_eq(RunState.owned_equipment.size(), 1, "Nothing was wiped.")
+	assert_eq(MetaState.owned_equipment_ids, [&"chainmail"] as Array[StringName])

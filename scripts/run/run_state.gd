@@ -197,6 +197,27 @@ func buy_potion(potion: PotionResource, price: int) -> bool:
 	gold -= price
 	return true
 
+func finish_run(victory: bool) -> RunOutcome:
+	var outcome := RunOutcome.new()
+	if not in_run:
+		push_warning("RunState.finish_run called outside a run; ignored")
+		return outcome
+	outcome.victory = victory
+	if not victory:
+		outcome.gear_lost = owned_equipment.size()
+		owned_equipment = []
+		equipped_weapon = null
+		equipped_armor = null
+		equipped_trinket = null
+		var kept_xp: int = floori(xp / 2.0)
+		outcome.xp_lost = xp - kept_xp
+		xp = kept_xp
+	_commit_equipment()
+	_commit_never_lost()
+	in_run = false
+	SaveManager.save_meta()
+	return outcome
+
 func _commit_never_lost() -> void:
 	MetaState.level = level
 	MetaState.xp = xp
