@@ -30,6 +30,10 @@ var skill_points: int = 0
 var unlocked_skill_nodes: Array[StringName] = []
 var level_bonus_strength: int = 0
 var level_bonus_block: int = 0
+var owned_equipment: Array[EquipmentResource] = []
+var equipped_weapon: EquipmentResource = null
+var equipped_armor: EquipmentResource = null
+var equipped_trinket: EquipmentResource = null
 
 func start_new_run(p_class_resource: ClassResource) -> void:
 	class_resource = p_class_resource
@@ -44,6 +48,10 @@ func start_new_run(p_class_resource: ClassResource) -> void:
 	unlocked_skill_nodes = []
 	level_bonus_strength = 0
 	level_bonus_block = 0
+	owned_equipment = []
+	equipped_weapon = null
+	equipped_armor = null
+	equipped_trinket = null
 	rng = RandomNumberGenerator.new()
 	rng.randomize()
 	map = MapGraph.generate(rng)
@@ -70,6 +78,27 @@ func build_encounter_for_node(node: MapNode) -> CombatEncounter:
 			enemy_res = CaveRatContent.get_enemy_resource()
 	var enemy := ActorFactory.build_enemy_actor(enemy_res)
 	return CombatEncounter.new(player, deck, enemy, enemy_res.moves, rng)
+
+func grant_equipment(item: EquipmentResource) -> void:
+	owned_equipment.append(item)
+
+func equip_item(item: EquipmentResource) -> void:
+	match item.slot:
+		EquipmentResource.Slot.WEAPON:
+			equipped_weapon = item
+		EquipmentResource.Slot.ARMOR:
+			equipped_armor = item
+		EquipmentResource.Slot.TRINKET:
+			equipped_trinket = item
+
+func unequip_slot(slot: EquipmentResource.Slot) -> void:
+	match slot:
+		EquipmentResource.Slot.WEAPON:
+			equipped_weapon = null
+		EquipmentResource.Slot.ARMOR:
+			equipped_armor = null
+		EquipmentResource.Slot.TRINKET:
+			equipped_trinket = null
 
 func _apply_passive(passive_id: StringName, player: CombatActor) -> void:
 	match passive_id:

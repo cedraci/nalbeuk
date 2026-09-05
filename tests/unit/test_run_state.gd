@@ -252,3 +252,49 @@ func test_grant_xp_zeroes_leftover_xp_when_reaching_max_level():
 	RunState.grant_xp(threshold_to_max + 500)
 	assert_eq(RunState.level, RunState.MAX_LEVEL)
 	assert_eq(RunState.xp, 0)
+
+func test_start_new_run_resets_equipment_state():
+	RunState.owned_equipment = [DwarfEquipment.get_all_equipment()[0]]
+	RunState.equipped_weapon = DwarfEquipment.get_all_equipment()[0]
+	RunState.start_new_run(DwarfContent.get_class_resource())
+	assert_eq(RunState.owned_equipment.size(), 0)
+	assert_null(RunState.equipped_weapon)
+	assert_null(RunState.equipped_armor)
+	assert_null(RunState.equipped_trinket)
+
+func test_grant_equipment_adds_to_owned_without_equipping():
+	RunState.start_new_run(DwarfContent.get_class_resource())
+	var sword: EquipmentResource = DwarfEquipment.get_all_equipment()[0]
+	RunState.grant_equipment(sword)
+	assert_true(RunState.owned_equipment.has(sword))
+	assert_null(RunState.equipped_weapon)
+
+func test_equip_item_fills_the_matching_slot():
+	RunState.start_new_run(DwarfContent.get_class_resource())
+	var sword: EquipmentResource = DwarfEquipment.get_all_equipment()[0]
+	RunState.grant_equipment(sword)
+	RunState.equip_item(sword)
+	assert_eq(RunState.equipped_weapon, sword)
+	assert_null(RunState.equipped_armor)
+	assert_null(RunState.equipped_trinket)
+
+func test_equipping_a_second_item_in_the_same_slot_replaces_the_first():
+	RunState.start_new_run(DwarfContent.get_class_resource())
+	var equipment := DwarfEquipment.get_all_equipment()
+	var sword: EquipmentResource = equipment[0]
+	var hammer: EquipmentResource = equipment[1]
+	RunState.grant_equipment(sword)
+	RunState.grant_equipment(hammer)
+	RunState.equip_item(sword)
+	RunState.equip_item(hammer)
+	assert_eq(RunState.equipped_weapon, hammer)
+	assert_true(RunState.owned_equipment.has(sword), "The replaced item stays owned, just unequipped.")
+
+func test_unequip_slot_clears_it():
+	RunState.start_new_run(DwarfContent.get_class_resource())
+	var sword: EquipmentResource = DwarfEquipment.get_all_equipment()[0]
+	RunState.grant_equipment(sword)
+	RunState.equip_item(sword)
+	RunState.unequip_slot(EquipmentResource.Slot.WEAPON)
+	assert_null(RunState.equipped_weapon)
+	assert_true(RunState.owned_equipment.has(sword))
