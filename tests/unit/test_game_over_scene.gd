@@ -7,10 +7,27 @@ func test_ready_shows_the_floor_reached():
 	add_child_autofree(scene)
 	assert_eq(scene.result_label.text, "You died on floor 3.")
 
-func test_new_run_button_emits_new_run_requested():
+func test_ready_shows_what_was_lost():
+	RunState.start_new_run(DwarfContent.get_class_resource())
+	RunState.grant_equipment(DwarfEquipment.get_by_id(&"chainmail"))
+	RunState.grant_equipment(DwarfEquipment.get_by_id(&"lucky_charm"))
+	RunState.xp = 15
+	var scene := GameOverScene.new()
+	scene.outcome = RunState.finish_run(false)
+	add_child_autofree(scene)
+	assert_eq(scene.outcome_label.text, "Lost 2 piece(s) of gear and 8 XP. Skills are safe.")
+
+func test_ready_without_an_outcome_shows_zero_losses():
+	RunState.start_new_run(DwarfContent.get_class_resource())
+	var scene := GameOverScene.new()
+	add_child_autofree(scene)
+	assert_eq(scene.outcome_label.text, "Lost 0 piece(s) of gear and 0 XP. Skills are safe.")
+
+func test_camp_button_emits_camp_requested():
 	RunState.start_new_run(DwarfContent.get_class_resource())
 	var scene := GameOverScene.new()
 	add_child_autofree(scene)
 	watch_signals(scene)
-	scene.new_run_button.pressed.emit()
-	assert_signal_emitted(scene, "new_run_requested")
+	assert_eq(scene.camp_button.text, "Return to Camp")
+	scene.camp_button.pressed.emit()
+	assert_signal_emitted(scene, "camp_requested")

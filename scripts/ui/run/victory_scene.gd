@@ -1,10 +1,14 @@
 extends Control
 class_name VictoryScene
 
-signal new_run_requested
+signal camp_requested
+
+# Set by RunScene before add_child; null is treated as an empty outcome.
+var outcome: RunOutcome = null
 
 var result_label: Label
-var new_run_button: Button
+var outcome_label: Label
+var camp_button: Button
 
 func _ready() -> void:
 	set_anchors_preset(Control.PRESET_FULL_RECT)
@@ -15,10 +19,14 @@ func _ready() -> void:
 	result_label.text = "Victory! You reached floor %d." % RunState.current_floor
 	vbox.add_child(result_label)
 
-	new_run_button = Button.new()
-	new_run_button.text = "New Run"
-	new_run_button.pressed.connect(_on_new_run_pressed)
-	vbox.add_child(new_run_button)
+	outcome_label = Label.new()
+	outcome_label.text = "Everything you found is yours to keep."
+	vbox.add_child(outcome_label)
 
-func _on_new_run_pressed() -> void:
-	new_run_requested.emit()
+	camp_button = Button.new()
+	camp_button.text = "Return to Camp"
+	camp_button.pressed.connect(_on_camp_pressed)
+	vbox.add_child(camp_button)
+
+func _on_camp_pressed() -> void:
+	camp_requested.emit()
