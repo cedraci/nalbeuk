@@ -15,6 +15,7 @@ var end_turn_button: Button
 var result_label: Label
 var play_again_button: Button
 var turn_ui_container: Control
+var potion_container: VBoxContainer
 var result_container: Control
 
 func _ready() -> void:
@@ -40,6 +41,9 @@ func _ready() -> void:
 	hand_view = HandView.new()
 	hand_view.card_clicked.connect(_on_hand_card_clicked)
 	turn_ui_container.add_child(hand_view)
+
+	potion_container = VBoxContainer.new()
+	turn_ui_container.add_child(potion_container)
 
 	var bottom_hbox := HBoxContainer.new()
 	turn_ui_container.add_child(bottom_hbox)
@@ -77,6 +81,24 @@ func _refresh() -> void:
 	if intent != null:
 		intent_view.display(intent)
 	energy_label.text = "Energy: %d / %d" % [encounter.energy, CombatEncounter.MAX_ENERGY]
+	_refresh_potions()
+
+func _refresh_potions() -> void:
+	for child in potion_container.get_children():
+		potion_container.remove_child(child)
+		child.queue_free()
+	potion_container.visible = not RunState.potions.is_empty()
+	for i in range(RunState.potions.size()):
+		var potion: PotionResource = RunState.potions[i]
+		var button := Button.new()
+		button.text = "%s: %s" % [potion.display_name, potion.description]
+		button.pressed.connect(_on_potion_button_pressed.bind(i))
+		potion_container.add_child(button)
+
+func _on_potion_button_pressed(index: int) -> void:
+	var potion: PotionResource = RunState.consume_potion(index)
+	potion.apply(encounter.player)
+	_refresh()
 
 func _on_hand_card_clicked(card: CardResource) -> void:
 	if encounter.can_play_card(card):

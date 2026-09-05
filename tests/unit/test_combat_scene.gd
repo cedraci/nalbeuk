@@ -97,3 +97,49 @@ func test_end_turn_button_shows_result_overlay_with_loss_message():
 	assert_eq(scene.result_label.text, "You Lost")
 	assert_true(scene.result_container.visible)
 	assert_false(scene.turn_ui_container.visible)
+
+func test_potion_row_hidden_when_no_potions():
+	RunState.start_new_run(DwarfContent.get_class_resource())
+	var scene := CombatScene.new()
+	add_child_autofree(scene)
+	var player := _make_actor(20)
+	var enemy := _make_actor(20)
+	var deck: Array[CardResource] = [_make_strike(3)]
+	var encounter := CombatEncounter.new(player, deck, enemy, [_make_attack_move(3)])
+	scene.start(encounter)
+	assert_false(scene.potion_container.visible)
+
+func test_potion_row_shows_one_button_per_potion():
+	RunState.start_new_run(DwarfContent.get_class_resource())
+	var potions := DwarfPotions.get_all_potions()
+	RunState.add_potion(potions[0])
+	RunState.add_potion(potions[1])
+	var scene := CombatScene.new()
+	add_child_autofree(scene)
+	var player := _make_actor(20)
+	var enemy := _make_actor(20)
+	var deck: Array[CardResource] = [_make_strike(3)]
+	var encounter := CombatEncounter.new(player, deck, enemy, [_make_attack_move(3)])
+	scene.start(encounter)
+	assert_true(scene.potion_container.visible)
+	assert_eq(scene.potion_container.get_child_count(), 2)
+
+func test_clicking_a_potion_button_applies_it_without_ending_the_turn():
+	RunState.start_new_run(DwarfContent.get_class_resource())
+	var potions := DwarfPotions.get_all_potions()
+	RunState.add_potion(potions[0])
+	var scene := CombatScene.new()
+	add_child_autofree(scene)
+	var player := _make_actor(20)
+	player.take_damage(15)
+	var enemy := _make_actor(20)
+	var deck: Array[CardResource] = [_make_strike(3)]
+	var encounter := CombatEncounter.new(player, deck, enemy, [_make_attack_move(3)])
+	scene.start(encounter)
+	var energy_before: int = encounter.energy
+	var potion_button: Button = scene.potion_container.get_child(0)
+	potion_button.pressed.emit()
+	assert_eq(encounter.player.current_hp, 15, "Healing Draught heals 10, from 5 up to 15.")
+	assert_eq(encounter.energy, energy_before, "Using a potion should not spend Energy.")
+	assert_true(scene.turn_ui_container.visible, "Using a potion should not end the turn.")
+	assert_eq(scene.potion_container.get_child_count(), 0, "The consumed potion should no longer appear.")
