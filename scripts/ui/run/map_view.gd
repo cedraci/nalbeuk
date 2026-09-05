@@ -6,6 +6,7 @@ signal skill_tree_requested
 
 var status_label: Label
 var skill_tree_button: Button
+var floors_container: HBoxContainer
 
 func _ready() -> void:
 	set_anchors_preset(Control.PRESET_FULL_RECT)
@@ -20,27 +21,12 @@ func display(map: MapGraph, current_node: MapNode) -> void:
 		remove_child(child)
 		child.queue_free()
 
-	var reachable_ids: Array[int] = []
-	if current_node.visited:
-		reachable_ids = current_node.connections.duplicate()
-	else:
-		reachable_ids.append(current_node.id)
-
-	var floors_hbox := HBoxContainer.new()
-	add_child(floors_hbox)
-	for floor_nodes in map.floors:
-		var floor_vbox := VBoxContainer.new()
-		floors_hbox.add_child(floor_vbox)
-		for node: MapNode in floor_nodes:
-			var button := Button.new()
-			var node_type_name: String = MapNode.NodeType.keys()[node.node_type]
-			button.text = node_type_name
-			button.disabled = node.visited or not reachable_ids.has(node.id)
-			button.pressed.connect(_on_node_button_pressed.bind(node))
-			floor_vbox.add_child(button)
+	var root_vbox := VBoxContainer.new()
+	root_vbox.set_anchors_preset(Control.PRESET_FULL_RECT)
+	add_child(root_vbox)
 
 	var header_hbox := HBoxContainer.new()
-	add_child(header_hbox)
+	root_vbox.add_child(header_hbox)
 
 	status_label = Label.new()
 	status_label.text = _status_text()
@@ -50,6 +36,25 @@ func display(map: MapGraph, current_node: MapNode) -> void:
 	skill_tree_button.text = "Skill Tree"
 	skill_tree_button.pressed.connect(_on_skill_tree_button_pressed)
 	header_hbox.add_child(skill_tree_button)
+
+	var reachable_ids: Array[int] = []
+	if current_node.visited:
+		reachable_ids = current_node.connections.duplicate()
+	else:
+		reachable_ids.append(current_node.id)
+
+	floors_container = HBoxContainer.new()
+	root_vbox.add_child(floors_container)
+	for floor_nodes in map.floors:
+		var floor_vbox := VBoxContainer.new()
+		floors_container.add_child(floor_vbox)
+		for node: MapNode in floor_nodes:
+			var button := Button.new()
+			var node_type_name: String = MapNode.NodeType.keys()[node.node_type]
+			button.text = node_type_name
+			button.disabled = node.visited or not reachable_ids.has(node.id)
+			button.pressed.connect(_on_node_button_pressed.bind(node))
+			floor_vbox.add_child(button)
 
 func _status_text() -> String:
 	if RunState.level >= RunState.MAX_LEVEL:

@@ -57,6 +57,23 @@ func test_build_encounter_for_node_applies_unyielding_passive():
 	RunState.unlocked_skill_nodes.append(&"unyielding")
 	var combat_node := MapNode.new(0, MapNode.NodeType.COMBAT, 0)
 	var encounter := RunState.build_encounter_for_node(combat_node)
+	assert_eq(encounter.player.starting_block, 5, "The bonus should be staged before the turn loop's first clear_block().")
+	encounter.start_player_turn()
+	assert_eq(encounter.player.block, 5, "Unyielding should actually grant 5 Block once the first turn begins.")
+	assert_eq(encounter.player.starting_block, 0, "The one-shot bonus must not be available to reapply.")
+
+func test_build_encounter_for_node_composes_all_level_bonuses_and_capstones_together():
+	RunState.start_new_run(DwarfContent.get_class_resource())
+	RunState.level_bonus_strength = 4
+	RunState.level_bonus_block = 3
+	RunState.unlocked_skill_nodes.append(&"battle_fury")
+	RunState.unlocked_skill_nodes.append(&"unyielding")
+	var combat_node := MapNode.new(0, MapNode.NodeType.COMBAT, 0)
+	var encounter := RunState.build_encounter_for_node(combat_node)
+	encounter.start_player_turn()
+	assert_eq(encounter.player.baseline_strike_bonus, 4)
+	assert_eq(encounter.player.baseline_block_bonus, 3)
+	assert_eq(encounter.player.get_status_stacks(&"strength"), 2)
 	assert_eq(encounter.player.block, 5)
 
 func test_build_encounter_for_node_without_any_skill_nodes_has_no_bonuses():
@@ -226,3 +243,12 @@ func test_apply_event_choice_xp_can_trigger_a_level_up():
 	RunState.apply_event_choice(choice)
 	assert_eq(RunState.level, 2)
 	assert_eq(RunState.skill_points, 1)
+
+func test_grant_xp_zeroes_leftover_xp_when_reaching_max_level():
+	RunState.start_new_run(DwarfContent.get_class_resource())
+	RunState.level = RunState.MAX_LEVEL - 1
+	RunState.xp = 0
+	var threshold_to_max: int = RunState.XP_THRESHOLDS[RunState.MAX_LEVEL - 2]
+	RunState.grant_xp(threshold_to_max + 500)
+	assert_eq(RunState.level, RunState.MAX_LEVEL)
+	assert_eq(RunState.xp, 0)

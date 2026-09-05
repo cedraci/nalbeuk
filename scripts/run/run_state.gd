@@ -59,7 +59,7 @@ func build_encounter_for_node(node: MapNode) -> CombatEncounter:
 	if unlocked_skill_nodes.has(&"battle_fury"):
 		player.add_status(&"strength", 2)
 	if unlocked_skill_nodes.has(&"unyielding"):
-		player.add_block(5)
+		player.starting_block = 5
 	var enemy_res: EnemyResource
 	match node.node_type:
 		MapNode.NodeType.ELITE:
@@ -82,6 +82,8 @@ func grant_xp(amount: int) -> void:
 		xp -= XP_THRESHOLDS[level - 1]
 		level += 1
 		skill_points += 1
+	if level >= MAX_LEVEL:
+		xp = 0
 
 func unlock_skill_node(node: SkillNode) -> bool:
 	if skill_points <= 0:

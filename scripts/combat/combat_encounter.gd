@@ -37,6 +37,9 @@ func _init(p_player: CombatActor, p_deck: Array[CardResource], p_enemy: CombatAc
 func start_player_turn() -> void:
 	energy = MAX_ENERGY
 	player.clear_block()
+	if player.starting_block > 0:
+		player.add_block(player.starting_block)
+		player.starting_block = 0
 	_draw_hand()
 
 func can_play_card(card: CardResource) -> bool:

@@ -9,7 +9,7 @@ func test_display_creates_one_column_per_floor():
 	var graph := MapGraph.new()
 	graph.floors = [[node_a] as Array[MapNode], [node_b] as Array[MapNode]]
 	map_view.display(graph, node_a)
-	var floors_hbox: HBoxContainer = map_view.get_child(0)
+	var floors_hbox: HBoxContainer = map_view.floors_container
 	assert_eq(floors_hbox.get_child_count(), 2)
 
 func test_display_enables_only_the_entry_node_before_the_run_has_moved():
@@ -21,7 +21,7 @@ func test_display_enables_only_the_entry_node_before_the_run_has_moved():
 	var graph := MapGraph.new()
 	graph.floors = [[node_a] as Array[MapNode], [node_b] as Array[MapNode]]
 	map_view.display(graph, node_a)
-	var floors_hbox: HBoxContainer = map_view.get_child(0)
+	var floors_hbox: HBoxContainer = map_view.floors_container
 	var floor0_vbox: VBoxContainer = floors_hbox.get_child(0)
 	var floor1_vbox: VBoxContainer = floors_hbox.get_child(1)
 	var entry_button: Button = floor0_vbox.get_child(0)
@@ -40,7 +40,7 @@ func test_display_enables_connections_of_a_visited_current_node():
 	var graph := MapGraph.new()
 	graph.floors = [[node_a] as Array[MapNode], [node_b, node_c] as Array[MapNode]]
 	map_view.display(graph, node_a)
-	var floors_hbox: HBoxContainer = map_view.get_child(0)
+	var floors_hbox: HBoxContainer = map_view.floors_container
 	var floor1_vbox: VBoxContainer = floors_hbox.get_child(1)
 	var reachable_button: Button = floor1_vbox.get_child(0)
 	var unreachable_button: Button = floor1_vbox.get_child(1)
@@ -55,7 +55,7 @@ func test_clicking_a_node_button_emits_node_selected():
 	graph.floors = [[node_a] as Array[MapNode]]
 	map_view.display(graph, node_a)
 	watch_signals(map_view)
-	var floors_hbox: HBoxContainer = map_view.get_child(0)
+	var floors_hbox: HBoxContainer = map_view.floors_container
 	var floor0_vbox: VBoxContainer = floors_hbox.get_child(0)
 	var button: Button = floor0_vbox.get_child(0)
 	button.pressed.emit()
@@ -72,7 +72,8 @@ func test_display_called_twice_leaves_only_the_current_floors_as_children():
 	var graph2 := MapGraph.new()
 	graph2.floors = [[node_b] as Array[MapNode]]
 	map_view.display(graph2, node_b)
-	assert_eq(map_view.get_child_count(), 2, "Only the second display() call's floors container and header should remain; remove_child() must detach the old ones immediately, not just queue_free() them.")
+	assert_eq(map_view.get_child_count(), 1, "Only the second display() call's root container should remain; remove_child() must detach the old one immediately, not just queue_free() it.")
+	assert_eq(map_view.floors_container.get_child_count(), 1, "The floors container should reflect only the second display() call's single floor, not the first's.")
 
 func test_display_adds_a_skill_tree_button_that_emits_skill_tree_requested():
 	RunState.start_new_run(DwarfContent.get_class_resource())
