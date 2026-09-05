@@ -86,3 +86,89 @@ func test_mark_node_visited_and_advance_updates_position():
 	assert_true(next_node.visited)
 	assert_eq(RunState.current_node, next_node)
 	assert_eq(RunState.current_floor, 1)
+
+func test_start_new_run_resets_leveling_state():
+	RunState.level = 5
+	RunState.xp = 40
+	RunState.skill_points = 3
+	RunState.unlocked_skill_nodes = [&"dwarven_grit"]
+	RunState.level_bonus_strength = 6
+	RunState.level_bonus_block = 3
+	RunState.start_new_run(DwarfContent.get_class_resource())
+	assert_eq(RunState.level, 1)
+	assert_eq(RunState.xp, 0)
+	assert_eq(RunState.skill_points, 0)
+	assert_eq(RunState.unlocked_skill_nodes.size(), 0)
+	assert_eq(RunState.level_bonus_strength, 0)
+	assert_eq(RunState.level_bonus_block, 0)
+
+func test_grant_xp_levels_up_and_grants_a_skill_point_at_threshold():
+	RunState.start_new_run(DwarfContent.get_class_resource())
+	RunState.grant_xp(RunState.XP_THRESHOLDS[0])
+	assert_eq(RunState.level, 2)
+	assert_eq(RunState.skill_points, 1)
+	assert_eq(RunState.xp, 0)
+
+func test_grant_xp_can_cause_multiple_level_ups_in_one_call():
+	RunState.start_new_run(DwarfContent.get_class_resource())
+	var big_reward: int = RunState.XP_THRESHOLDS[0] + RunState.XP_THRESHOLDS[1]
+	RunState.grant_xp(big_reward)
+	assert_eq(RunState.level, 3)
+	assert_eq(RunState.skill_points, 2)
+	assert_eq(RunState.xp, 0)
+
+func test_grant_xp_leaves_remainder_below_the_next_threshold():
+	RunState.start_new_run(DwarfContent.get_class_resource())
+	RunState.grant_xp(RunState.XP_THRESHOLDS[0] + 5)
+	assert_eq(RunState.level, 2)
+	assert_eq(RunState.xp, 5)
+
+func test_grant_xp_does_nothing_once_at_max_level():
+	RunState.start_new_run(DwarfContent.get_class_resource())
+	RunState.level = RunState.MAX_LEVEL
+	RunState.skill_points = 0
+	RunState.xp = 0
+	RunState.grant_xp(1000)
+	assert_eq(RunState.level, RunState.MAX_LEVEL)
+	assert_eq(RunState.skill_points, 0)
+	assert_eq(RunState.xp, 0)
+
+func test_unlock_skill_node_spends_a_point_and_applies_deltas():
+	RunState.start_new_run(DwarfContent.get_class_resource())
+	RunState.skill_points = 1
+	var max_hp_before: int = RunState.player_max_hp
+	var node := SkillNode.new(&"test_node", "Test Node", "desc", SkillNode.Branch.ROOT, &"", 2, 3, 1, &"")
+	var unlocked := RunState.unlock_skill_node(node)
+	assert_true(unlocked)
+	assert_eq(RunState.skill_points, 0)
+	assert_eq(RunState.level_bonus_strength, 2)
+	assert_eq(RunState.level_bonus_block, 1)
+	assert_eq(RunState.player_max_hp, max_hp_before + 6)
+	assert_eq(RunState.player_current_hp, RunState.player_max_hp)
+	assert_true(RunState.unlocked_skill_nodes.has(&"test_node"))
+
+func test_unlock_skill_node_fails_with_no_points():
+	RunState.start_new_run(DwarfContent.get_class_resource())
+	RunState.skill_points = 0
+	var node := SkillNode.new(&"test_node", "Test Node", "desc", SkillNode.Branch.ROOT, &"")
+	var unlocked := RunState.unlock_skill_node(node)
+	assert_false(unlocked)
+	assert_false(RunState.unlocked_skill_nodes.has(&"test_node"))
+
+func test_unlock_skill_node_fails_when_prerequisite_unmet():
+	RunState.start_new_run(DwarfContent.get_class_resource())
+	RunState.skill_points = 1
+	var node := SkillNode.new(&"child_node", "Child", "desc", SkillNode.Branch.OFFENSE, &"parent_node")
+	var unlocked := RunState.unlock_skill_node(node)
+	assert_false(unlocked)
+	assert_eq(RunState.skill_points, 1)
+
+func test_unlock_skill_node_fails_when_already_unlocked():
+	RunState.start_new_run(DwarfContent.get_class_resource())
+	RunState.skill_points = 2
+	var node := SkillNode.new(&"test_node", "Test Node", "desc", SkillNode.Branch.ROOT, &"", 2)
+	RunState.unlock_skill_node(node)
+	var unlocked_again := RunState.unlock_skill_node(node)
+	assert_false(unlocked_again)
+	assert_eq(RunState.skill_points, 1)
+	assert_eq(RunState.level_bonus_strength, 2, "Buying the same node twice must not double-apply its bonus.")

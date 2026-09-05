@@ -8,6 +8,11 @@ const COMBAT_GOLD_REWARD := 10
 const ELITE_GOLD_REWARD := 20
 const BOSS_GOLD_REWARD := 30
 const SHOP_CARD_PRICE := 15
+const MAX_LEVEL := 7
+const XP_THRESHOLDS: Array[int] = [20, 30, 40, 55, 70, 90]
+const COMBAT_XP_REWARD := 15
+const ELITE_XP_REWARD := 30
+const BOSS_XP_REWARD := 50
 
 var class_resource: ClassResource
 var persistent_stats: PersistentStats
@@ -19,6 +24,12 @@ var map: MapGraph
 var current_floor: int = 0
 var current_node: MapNode
 var rng: RandomNumberGenerator
+var level: int = 1
+var xp: int = 0
+var skill_points: int = 0
+var unlocked_skill_nodes: Array[StringName] = []
+var level_bonus_strength: int = 0
+var level_bonus_block: int = 0
 
 func start_new_run(p_class_resource: ClassResource) -> void:
 	class_resource = p_class_resource
@@ -27,6 +38,12 @@ func start_new_run(p_class_resource: ClassResource) -> void:
 	player_max_hp = persistent_stats.compute_max_hp(class_resource.base_hp)
 	player_current_hp = player_max_hp
 	gold = 0
+	level = 1
+	xp = 0
+	skill_points = 0
+	unlocked_skill_nodes = []
+	level_bonus_strength = 0
+	level_bonus_block = 0
 	rng = RandomNumberGenerator.new()
 	rng.randomize()
 	map = MapGraph.generate(rng)
@@ -49,6 +66,31 @@ func build_encounter_for_node(node: MapNode) -> CombatEncounter:
 
 func heal(amount: int) -> void:
 	player_current_hp = min(player_current_hp + amount, player_max_hp) as int
+
+func grant_xp(amount: int) -> void:
+	if level >= MAX_LEVEL:
+		return
+	xp += amount
+	while level < MAX_LEVEL and xp >= XP_THRESHOLDS[level - 1]:
+		xp -= XP_THRESHOLDS[level - 1]
+		level += 1
+		skill_points += 1
+
+func unlock_skill_node(node: SkillNode) -> bool:
+	if skill_points <= 0:
+		return false
+	if unlocked_skill_nodes.has(node.id):
+		return false
+	if node.requires_id != &"" and not unlocked_skill_nodes.has(node.requires_id):
+		return false
+	skill_points -= 1
+	unlocked_skill_nodes.append(node.id)
+	level_bonus_strength += node.strength_delta
+	level_bonus_block += node.block_delta
+	var hp_gain: int = node.vitality_delta * 2
+	player_max_hp += hp_gain
+	player_current_hp += hp_gain
+	return true
 
 func upgrade_card(card_id: StringName) -> void:
 	for i in range(deck.size()):
