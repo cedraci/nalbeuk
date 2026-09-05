@@ -51,6 +51,8 @@ func _show_camp() -> void:
 	camp_scene.skill_tree_requested.connect(_on_skill_tree_requested)
 	camp_scene.inventory_requested.connect(_on_inventory_requested)
 	camp_scene.run_requested.connect(_on_run_requested)
+	camp_scene.continue_requested.connect(_on_continue_requested)
+	camp_scene.abandon_requested.connect(_on_abandon_requested)
 	_swap_to(camp_scene)
 
 # Where "Back" goes: the map during a run, Camp between runs.
@@ -63,6 +65,22 @@ func _show_home() -> void:
 func _on_run_requested() -> void:
 	RunState.start_new_run(DwarfContent.get_class_resource())
 	_show_map()
+
+func _on_continue_requested() -> void:
+	if RunState.resume_run(DwarfContent.get_class_resource()):
+		_show_map()
+		return
+	# A snapshot that cannot be restored is discarded with no penalty.
+	SaveManager.run_snapshot = null
+	SaveManager.save_game()
+	_show_camp()
+
+func _on_abandon_requested() -> void:
+	var outcome := RunState.abandon_saved_run()
+	if outcome.abandoned:
+		_show_game_over(outcome)
+	else:
+		_show_camp()
 
 func _on_skill_tree_requested() -> void:
 	skill_tree_scene = SkillTreeScene.new()

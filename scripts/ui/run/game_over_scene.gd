@@ -15,8 +15,10 @@ func _ready() -> void:
 	var vbox := VBoxContainer.new()
 	add_child(vbox)
 
+	var abandoned: bool = outcome != null and outcome.abandoned
 	result_label = Label.new()
-	result_label.text = "You died on floor %d." % RunState.current_floor
+	var headline: String = "You abandoned the run on floor %d." if abandoned else "You died on floor %d."
+	result_label.text = headline % RunState.current_floor
 	vbox.add_child(result_label)
 
 	var gear_lost: int = outcome.gear_lost if outcome != null else 0

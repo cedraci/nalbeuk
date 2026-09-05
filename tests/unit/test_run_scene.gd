@@ -251,3 +251,75 @@ func test_gear_equipped_at_camp_is_saved_and_carried_into_the_run():
 	var combat_node := MapNode.new(9999, MapNode.NodeType.COMBAT, 0)
 	scene.map_view.node_selected.emit(combat_node)
 	assert_eq(scene.combat_scene.encounter.player.baseline_strike_bonus, 4)
+
+# Suspends a run at the first node of floor 1 with recognisable HP/gold,
+# then simulates quit + relaunch (free the scene, wipe memory, boot fresh).
+func _suspend_a_run_and_relaunch() -> RunScene:
+	var scene := _boot_into_run()
+	var next_node: MapNode = RunState.map.floors[1][0]
+	RunState.player_current_hp = 13
+	RunState.gold = 17
+	RunState.mark_node_visited_and_advance(next_node)
+	scene.free()
+	MetaState.reset()
+	SaveManager.run_snapshot = null
+	var again := RunScene.new()
+	add_child_autofree(again)
+	return again
+
+func test_boot_with_a_suspended_run_offers_continue_and_abandon():
+	var scene := _suspend_a_run_and_relaunch()
+	assert_eq(scene.camp_scene.get_parent(), scene)
+	assert_true(scene.camp_scene.continue_run_button.visible)
+	assert_true(scene.camp_scene.abandon_run_button.visible)
+	assert_false(scene.camp_scene.start_run_button.visible)
+
+func test_continue_resumes_at_the_saved_node_with_the_saved_hp_and_gold():
+	var scene := _suspend_a_run_and_relaunch()
+	var saved_node_id: int = int(SaveManager.run_snapshot["current_node_id"])
+	scene.camp_scene.continue_run_button.pressed.emit()
+	assert_true(scene.map_view.visible)
+	assert_true(RunState.in_run)
+	assert_eq(RunState.current_node.id, saved_node_id)
+	assert_eq(RunState.current_floor, 1)
+	assert_eq(RunState.player_current_hp, 13)
+	assert_eq(RunState.gold, 17)
+
+func test_abandon_shows_the_abandon_game_over_applies_the_penalty_and_returns_to_a_fresh_camp():
+	MetaState.owned_equipment_ids = [&"leather_vest"]
+	SaveManager.save_game()
+	var scene := _suspend_a_run_and_relaunch()
+	scene.camp_scene.abandon_run_button.pressed.emit()
+	assert_eq(scene.game_over_scene.get_parent(), scene)
+	assert_true(scene.game_over_scene.result_label.text.begins_with("You abandoned the run on floor 1."))
+	assert_eq(MetaState.owned_equipment_ids.size(), 0)
+	assert_false(SaveManager.has_run_snapshot())
+	scene.game_over_scene.camp_button.pressed.emit()
+	assert_eq(scene.camp_scene.get_parent(), scene)
+	assert_true(scene.camp_scene.start_run_button.visible)
+	assert_false(scene.camp_scene.continue_run_button.visible)
+
+func test_continue_with_a_broken_snapshot_returns_to_camp_without_penalty():
+	MetaState.owned_equipment_ids = [&"leather_vest"]
+	SaveManager.save_game()
+	var scene := _suspend_a_run_and_relaunch()
+	SaveManager.run_snapshot["current_node_id"] = 9999
+	scene.camp_scene.continue_run_button.pressed.emit()
+	assert_eq(scene.camp_scene.get_parent(), scene)
+	assert_false(scene.map_view.visible)
+	assert_false(SaveManager.has_run_snapshot())
+	assert_true(scene.camp_scene.start_run_button.visible)
+	assert_eq(MetaState.owned_equipment_ids, [&"leather_vest"] as Array[StringName])
+
+func test_finishing_a_run_leaves_no_suspended_run_on_the_next_boot():
+	var scene := _boot_into_run()
+	var boss_node := MapNode.new(9999, MapNode.NodeType.BOSS, 0)
+	scene.map_view.node_selected.emit(boss_node)
+	scene.combat_scene.combat_dismissed.emit(true)
+	scene.free()
+	MetaState.reset()
+	SaveManager.run_snapshot = null
+	var again := RunScene.new()
+	add_child_autofree(again)
+	assert_true(again.camp_scene.start_run_button.visible)
+	assert_false(again.camp_scene.continue_run_button.visible)

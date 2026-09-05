@@ -31,3 +31,16 @@ func test_camp_button_emits_camp_requested():
 	assert_eq(scene.camp_button.text, "Return to Camp")
 	scene.camp_button.pressed.emit()
 	assert_signal_emitted(scene, "camp_requested")
+
+func test_ready_says_abandoned_when_the_outcome_is_an_abandon():
+	RunState.start_new_run(DwarfContent.get_class_resource())
+	RunState.current_floor = 4
+	var outcome := RunOutcome.new()
+	outcome.abandoned = true
+	outcome.gear_lost = 1
+	outcome.xp_lost = 3
+	var scene := GameOverScene.new()
+	scene.outcome = outcome
+	add_child_autofree(scene)
+	assert_eq(scene.result_label.text, "You abandoned the run on floor 4.")
+	assert_eq(scene.outcome_label.text, "Lost 1 piece(s) of gear and 3 XP. Skills are safe.")
