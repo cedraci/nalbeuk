@@ -167,3 +167,18 @@ func test_winning_a_plain_combat_node_grants_neither_equipment_nor_relics():
 	scene.combat_scene.combat_dismissed.emit(true)
 	assert_eq(RunState.owned_equipment.size(), owned_before)
 	assert_eq(RunState.unlocked_relics.size(), relics_before)
+
+func test_pressing_inventory_button_shows_inventory_scene():
+	var scene := RunScene.new()
+	add_child_autofree(scene)
+	scene.map_view.inventory_requested.emit()
+	assert_eq(scene.inventory_scene.get_parent(), scene)
+
+func test_inventory_back_returns_to_map_without_advancing_position():
+	var scene := RunScene.new()
+	add_child_autofree(scene)
+	var starting_node := RunState.current_node
+	scene.map_view.inventory_requested.emit()
+	scene.inventory_scene.back_requested.emit()
+	assert_eq(scene.map_view.get_parent(), scene)
+	assert_eq(RunState.current_node, starting_node)

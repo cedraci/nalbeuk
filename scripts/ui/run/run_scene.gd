@@ -9,6 +9,7 @@ var shop_scene: ShopScene
 var victory_scene: VictoryScene
 var game_over_scene: GameOverScene
 var skill_tree_scene: SkillTreeScene
+var inventory_scene: InventoryScene
 
 var _current_child: Control
 
@@ -18,6 +19,7 @@ func _ready() -> void:
 	map_view.set_anchors_preset(Control.PRESET_FULL_RECT)
 	map_view.node_selected.connect(_on_map_node_selected)
 	map_view.skill_tree_requested.connect(_on_skill_tree_requested)
+	map_view.inventory_requested.connect(_on_inventory_requested)
 	add_child(map_view)
 	RunState.start_new_run(DwarfContent.get_class_resource())
 	_show_map()
@@ -48,6 +50,15 @@ func _on_skill_tree_requested() -> void:
 	_swap_to(skill_tree_scene)
 
 func _on_skill_tree_back_requested() -> void:
+	_show_map()
+
+func _on_inventory_requested() -> void:
+	inventory_scene = InventoryScene.new()
+	inventory_scene.set_anchors_preset(Control.PRESET_FULL_RECT)
+	inventory_scene.back_requested.connect(_on_inventory_back_requested)
+	_swap_to(inventory_scene)
+
+func _on_inventory_back_requested() -> void:
 	_show_map()
 
 func _on_map_node_selected(node: MapNode) -> void:
