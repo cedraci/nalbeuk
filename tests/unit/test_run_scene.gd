@@ -181,7 +181,7 @@ func test_start_run_from_camp_shows_the_map_with_a_run_in_progress():
 func test_ready_loads_the_saved_character():
 	MetaState.level = 3
 	MetaState.unlocked_skill_nodes = [&"dwarven_grit"]
-	SaveManager.save_meta()
+	SaveManager.save_game()
 	MetaState.reset()
 	var scene := RunScene.new()
 	add_child_autofree(scene)
@@ -238,7 +238,7 @@ func test_inventory_opened_from_camp_returns_to_camp():
 
 func test_gear_equipped_at_camp_is_saved_and_carried_into_the_run():
 	MetaState.owned_equipment_ids = [&"dwarven_warhammer"]
-	SaveManager.save_meta()
+	SaveManager.save_game()
 	var scene := RunScene.new()
 	add_child_autofree(scene)
 	scene.camp_scene.inventory_requested.emit()

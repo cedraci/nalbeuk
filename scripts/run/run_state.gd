@@ -215,7 +215,7 @@ func finish_run(victory: bool) -> RunOutcome:
 	_commit_equipment()
 	_commit_never_lost()
 	in_run = false
-	SaveManager.save_meta()
+	SaveManager.save_game()
 	return outcome
 
 func _commit_never_lost() -> void:
@@ -237,7 +237,7 @@ func _commit_equipment_if_at_camp() -> void:
 	if in_run:
 		return
 	_commit_equipment()
-	SaveManager.save_meta()
+	SaveManager.save_game()
 
 func _apply_passive(passive_id: StringName, player: CombatActor) -> void:
 	match passive_id:
@@ -262,7 +262,7 @@ func grant_xp(amount: int) -> void:
 	if level >= MAX_LEVEL:
 		xp = 0
 	_commit_never_lost()
-	SaveManager.save_meta()
+	SaveManager.save_game()
 
 func unlock_skill_node(node: SkillNode) -> bool:
 	if skill_points <= 0:
@@ -279,7 +279,7 @@ func unlock_skill_node(node: SkillNode) -> bool:
 	player_max_hp += hp_gain
 	player_current_hp += hp_gain
 	_commit_never_lost()
-	SaveManager.save_meta()
+	SaveManager.save_game()
 	return true
 
 func upgrade_card(card_id: StringName) -> void:

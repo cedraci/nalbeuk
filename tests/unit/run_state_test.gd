@@ -11,4 +11,5 @@ const TEST_SAVE_PATH := "user://test_save.json"
 func before_each() -> void:
 	SaveManager.save_path = TEST_SAVE_PATH
 	SaveManager.delete_save()
+	SaveManager.run_snapshot = null
 	MetaState.reset()

@@ -22,7 +22,7 @@ func _ready() -> void:
 	map_view.skill_tree_requested.connect(_on_skill_tree_requested)
 	map_view.inventory_requested.connect(_on_inventory_requested)
 	add_child(map_view)
-	SaveManager.load_meta()
+	SaveManager.load_game()
 	RunState.enter_camp(DwarfContent.get_class_resource())
 	_show_camp()
 

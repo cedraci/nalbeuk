@@ -516,7 +516,7 @@ func test_grant_xp_writes_through_to_meta_state_and_saves():
 	assert_eq(MetaState.xp, 5)
 	assert_eq(MetaState.skill_points, 1)
 	MetaState.reset()
-	assert_true(SaveManager.load_meta(), "grant_xp saved to disk.")
+	assert_true(SaveManager.load_game(), "grant_xp saved to disk.")
 	assert_eq(MetaState.level, 2)
 	assert_eq(MetaState.xp, 5)
 
@@ -528,7 +528,7 @@ func test_unlock_skill_node_writes_through_to_meta_state_and_saves():
 	assert_eq(MetaState.unlocked_skill_nodes, [&"dwarven_grit"] as Array[StringName])
 	assert_eq(MetaState.skill_points, 0)
 	MetaState.reset()
-	SaveManager.load_meta()
+	SaveManager.load_game()
 	assert_eq(MetaState.unlocked_skill_nodes, [&"dwarven_grit"] as Array[StringName])
 
 func test_failed_unlock_does_not_touch_meta_state():
@@ -537,7 +537,7 @@ func test_failed_unlock_does_not_touch_meta_state():
 	var root: SkillNode = DwarfSkillTree.get_node_by_id(&"dwarven_grit")
 	assert_false(RunState.unlock_skill_node(root))
 	assert_eq(MetaState.unlocked_skill_nodes.size(), 0)
-	assert_false(SaveManager.load_meta(), "Nothing was saved.")
+	assert_false(SaveManager.load_game(), "Nothing was saved.")
 
 func test_gear_changes_inside_a_run_are_not_written_through():
 	RunState.start_new_run(DwarfContent.get_class_resource())
@@ -546,7 +546,7 @@ func test_gear_changes_inside_a_run_are_not_written_through():
 	RunState.equip_item(sword)
 	assert_eq(MetaState.owned_equipment_ids.size(), 0)
 	assert_eq(MetaState.equipped_weapon_id, &"")
-	assert_false(SaveManager.load_meta(), "Nothing was saved.")
+	assert_false(SaveManager.load_game(), "Nothing was saved.")
 
 func test_gear_changes_at_camp_are_written_through_and_saved():
 	MetaState.owned_equipment_ids = [&"rusty_shortsword", &"chainmail"]
@@ -558,7 +558,7 @@ func test_gear_changes_at_camp_are_written_through_and_saved():
 	RunState.unequip_slot(EquipmentResource.Slot.ARMOR)
 	assert_eq(MetaState.equipped_armor_id, &"")
 	MetaState.reset()
-	assert_true(SaveManager.load_meta())
+	assert_true(SaveManager.load_game())
 	assert_eq(MetaState.owned_equipment_ids, [&"rusty_shortsword", &"chainmail"] as Array[StringName])
 	assert_eq(MetaState.equipped_weapon_id, &"rusty_shortsword")
 	assert_eq(MetaState.equipped_armor_id, &"")
@@ -584,7 +584,7 @@ func test_finish_run_victory_commits_gear_found_during_the_run():
 	assert_eq(MetaState.owned_equipment_ids, [&"dwarven_warhammer"] as Array[StringName])
 	assert_eq(MetaState.equipped_weapon_id, &"dwarven_warhammer")
 	MetaState.reset()
-	assert_true(SaveManager.load_meta())
+	assert_true(SaveManager.load_game())
 	assert_eq(MetaState.equipped_weapon_id, &"dwarven_warhammer")
 	assert_eq(MetaState.xp, 5)
 
@@ -612,7 +612,7 @@ func test_finish_run_death_wipes_gear_and_halves_xp_but_keeps_level_and_skills()
 	assert_eq(MetaState.level, 2)
 	assert_eq(MetaState.unlocked_skill_nodes, [&"dwarven_grit"] as Array[StringName])
 	MetaState.reset()
-	assert_true(SaveManager.load_meta())
+	assert_true(SaveManager.load_game())
 	assert_eq(MetaState.xp, 7)
 	assert_eq(MetaState.owned_equipment_ids.size(), 0)
 
