@@ -26,5 +26,8 @@ func _start_new_fight() -> void:
 	combat_scene = CombatScene.new()
 	combat_scene.set_anchors_preset(Control.PRESET_FULL_RECT)
 	add_child(combat_scene)
-	combat_scene.play_again_requested.connect(_start_new_fight)
+	combat_scene.combat_dismissed.connect(_on_combat_dismissed)
 	combat_scene.start(encounter)
+
+func _on_combat_dismissed(_player_won: bool) -> void:
+	_start_new_fight()

@@ -60,12 +60,18 @@ func test_combat_ended_shows_result_overlay_with_win_message():
 	assert_true(scene.result_container.visible)
 	assert_eq(scene.result_label.text, "You Won")
 
-func test_play_again_button_emits_play_again_requested():
+func test_play_again_button_emits_combat_dismissed_with_player_won():
 	var scene := CombatScene.new()
 	add_child_autofree(scene)
+	var player := _make_actor(3)
+	var enemy := _make_actor(20)
+	var deck: Array[CardResource] = [_make_strike(3)]
+	var encounter := CombatEncounter.new(player, deck, enemy, [_make_attack_move(5)])
+	scene.start(encounter)
+	scene.end_turn_button.pressed.emit()
 	watch_signals(scene)
 	scene.play_again_button.pressed.emit()
-	assert_signal_emitted(scene, "play_again_requested")
+	assert_signal_emitted_with_parameters(scene, "combat_dismissed", [false])
 
 func test_end_turn_button_starts_new_player_turn_when_combat_continues():
 	var scene := CombatScene.new()

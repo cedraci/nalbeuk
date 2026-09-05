@@ -1,9 +1,10 @@
 extends Control
 class_name CombatScene
 
-signal play_again_requested
+signal combat_dismissed(player_won: bool)
 
 var encounter: CombatEncounter
+var _last_result_player_won: bool = false
 
 var player_panel: ActorPanel
 var enemy_panel: ActorPanel
@@ -91,6 +92,7 @@ func _on_combat_ended(player_won: bool) -> void:
 	turn_ui_container.hide()
 	result_container.show()
 	result_label.text = "You Won" if player_won else "You Lost"
+	_last_result_player_won = player_won
 
 func _on_play_again_pressed() -> void:
-	play_again_requested.emit()
+	combat_dismissed.emit(_last_result_player_won)
