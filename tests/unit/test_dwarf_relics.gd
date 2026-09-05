@@ -23,3 +23,11 @@ func test_get_random_relic_returns_one_of_the_known_relics():
 		all_ids.append(relic.id)
 	var picked := DwarfRelics.get_random_relic(rng)
 	assert_true(all_ids.has(picked.id))
+
+func test_get_by_id_returns_the_matching_relic():
+	var relic := DwarfRelics.get_by_id(&"whetstone")
+	assert_not_null(relic)
+	assert_eq(relic.strength_delta, 2)
+
+func test_get_by_id_returns_null_for_unknown_id():
+	assert_null(DwarfRelics.get_by_id(&"no_such_relic"))

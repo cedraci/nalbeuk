@@ -20,3 +20,11 @@ func test_vigor_tonic_grants_three_strength_stacks():
 	for potion in potions:
 		by_id[potion.id] = potion
 	assert_eq(by_id[&"vigor_tonic"].strength_stacks, 3)
+
+func test_get_by_id_returns_the_matching_potion():
+	var potion := DwarfPotions.get_by_id(&"vigor_tonic")
+	assert_not_null(potion)
+	assert_eq(potion.strength_stacks, 3)
+
+func test_get_by_id_returns_null_for_unknown_id():
+	assert_null(DwarfPotions.get_by_id(&"no_such_potion"))

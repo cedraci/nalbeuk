@@ -31,3 +31,9 @@ static func get_all_relics() -> Array[RelicResource]:
 static func get_random_relic(rng: RandomNumberGenerator) -> RelicResource:
 	var relics := get_all_relics()
 	return relics[rng.randi_range(0, relics.size() - 1)]
+
+static func get_by_id(relic_id: StringName) -> RelicResource:
+	for relic in get_all_relics():
+		if relic.id == relic_id:
+			return relic
+	return null

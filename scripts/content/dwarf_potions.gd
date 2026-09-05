@@ -15,3 +15,9 @@ static func get_all_potions() -> Array[PotionResource]:
 	vigor_tonic.strength_stacks = 3
 
 	return [healing_draught, vigor_tonic]
+
+static func get_by_id(potion_id: StringName) -> PotionResource:
+	for potion in get_all_potions():
+		if potion.id == potion_id:
+			return potion
+	return null

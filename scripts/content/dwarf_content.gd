@@ -76,3 +76,16 @@ static func _make_guard_plus_card() -> CardResource:
 	card.effects = [effect]
 	card.description = "Gain 8 Block."
 	return card
+
+static func get_card_by_id(card_id: StringName) -> CardResource:
+	match card_id:
+		&"dwarf_strike":
+			return _make_strike_card()
+		&"dwarf_guard":
+			return _make_guard_card()
+		&"dwarf_strike_plus":
+			return _make_strike_plus_card()
+		&"dwarf_guard_plus":
+			return _make_guard_plus_card()
+		_:
+			return null
