@@ -8,6 +8,8 @@ const COMBAT_GOLD_REWARD := 10
 const ELITE_GOLD_REWARD := 20
 const BOSS_GOLD_REWARD := 30
 const SHOP_CARD_PRICE := 15
+const SHOP_EQUIPMENT_PRICE := 20
+const SHOP_POTION_PRICE := 12
 const MAX_LEVEL := 7
 const XP_THRESHOLDS: Array[int] = [20, 30, 40, 55, 70, 90]
 const COMBAT_XP_REWARD := 15
@@ -137,6 +139,21 @@ func consume_potion(index: int) -> PotionResource:
 	var potion: PotionResource = potions[index]
 	potions.remove_at(index)
 	return potion
+
+func buy_equipment(item: EquipmentResource, price: int) -> bool:
+	if gold < price:
+		return false
+	gold -= price
+	grant_equipment(item)
+	return true
+
+func buy_potion(potion: PotionResource, price: int) -> bool:
+	if gold < price:
+		return false
+	if not add_potion(potion):
+		return false
+	gold -= price
+	return true
 
 func _apply_passive(passive_id: StringName, player: CombatActor) -> void:
 	match passive_id:
