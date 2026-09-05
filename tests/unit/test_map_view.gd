@@ -72,4 +72,40 @@ func test_display_called_twice_leaves_only_the_current_floors_as_children():
 	var graph2 := MapGraph.new()
 	graph2.floors = [[node_b] as Array[MapNode]]
 	map_view.display(graph2, node_b)
-	assert_eq(map_view.get_child_count(), 1, "Only the second display() call's floor container should remain; remove_child() must detach the old one immediately, not just queue_free() it.")
+	assert_eq(map_view.get_child_count(), 2, "Only the second display() call's floors container and header should remain; remove_child() must detach the old ones immediately, not just queue_free() them.")
+
+func test_display_adds_a_skill_tree_button_that_emits_skill_tree_requested():
+	RunState.start_new_run(DwarfContent.get_class_resource())
+	var map_view := MapView.new()
+	add_child_autofree(map_view)
+	var node_a := MapNode.new(0, MapNode.NodeType.COMBAT, 0)
+	var graph := MapGraph.new()
+	graph.floors = [[node_a] as Array[MapNode]]
+	map_view.display(graph, node_a)
+	watch_signals(map_view)
+	map_view.skill_tree_button.pressed.emit()
+	assert_signal_emitted(map_view, "skill_tree_requested")
+
+func test_display_shows_current_level_and_skill_points():
+	RunState.start_new_run(DwarfContent.get_class_resource())
+	RunState.level = 3
+	RunState.skill_points = 2
+	var map_view := MapView.new()
+	add_child_autofree(map_view)
+	var node_a := MapNode.new(0, MapNode.NodeType.COMBAT, 0)
+	var graph := MapGraph.new()
+	graph.floors = [[node_a] as Array[MapNode]]
+	map_view.display(graph, node_a)
+	assert_true(map_view.status_label.text.contains("Lv 3"))
+	assert_true(map_view.status_label.text.contains("Skill Points: 2"))
+
+func test_display_shows_max_level_without_an_xp_fraction():
+	RunState.start_new_run(DwarfContent.get_class_resource())
+	RunState.level = RunState.MAX_LEVEL
+	var map_view := MapView.new()
+	add_child_autofree(map_view)
+	var node_a := MapNode.new(0, MapNode.NodeType.COMBAT, 0)
+	var graph := MapGraph.new()
+	graph.floors = [[node_a] as Array[MapNode]]
+	map_view.display(graph, node_a)
+	assert_true(map_view.status_label.text.contains("MAX"))
