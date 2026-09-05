@@ -22,6 +22,9 @@ static func get_upgraded_card(card_id: StringName) -> CardResource:
 		_:
 			return null
 
+static func get_shop_offerings() -> Array[CardResource]:
+	return [_make_strike_card(), _make_guard_card()]
+
 static func _make_strike_card() -> CardResource:
 	var card := CardResource.new()
 	card.id = &"dwarf_strike"
