@@ -52,7 +52,14 @@ func start_new_run(p_class_resource: ClassResource) -> void:
 
 func build_encounter_for_node(node: MapNode) -> CombatEncounter:
 	var player := ActorFactory.build_player_actor(class_resource, persistent_stats)
+	player.max_hp = player_max_hp
 	player.current_hp = min(player_current_hp, player.max_hp) as int
+	player.baseline_strike_bonus += level_bonus_strength
+	player.baseline_block_bonus += level_bonus_block
+	if unlocked_skill_nodes.has(&"battle_fury"):
+		player.add_status(&"strength", 2)
+	if unlocked_skill_nodes.has(&"unyielding"):
+		player.add_block(5)
 	var enemy_res: EnemyResource
 	match node.node_type:
 		MapNode.NodeType.ELITE:

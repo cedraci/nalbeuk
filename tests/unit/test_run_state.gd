@@ -28,6 +28,45 @@ func test_build_encounter_for_node_uses_boss_enemy_for_boss_nodes():
 	var encounter := RunState.build_encounter_for_node(boss_node)
 	assert_eq(encounter.enemy.display_name, "Cave Rat Matriarch")
 
+func test_build_encounter_for_node_applies_level_bonus_strength_and_block():
+	RunState.start_new_run(DwarfContent.get_class_resource())
+	RunState.level_bonus_strength = 4
+	RunState.level_bonus_block = 3
+	var combat_node := MapNode.new(0, MapNode.NodeType.COMBAT, 0)
+	var encounter := RunState.build_encounter_for_node(combat_node)
+	assert_eq(encounter.player.baseline_strike_bonus, 4)
+	assert_eq(encounter.player.baseline_block_bonus, 3)
+
+func test_build_encounter_for_node_uses_player_max_hp_as_source_of_truth():
+	RunState.start_new_run(DwarfContent.get_class_resource())
+	RunState.player_max_hp += 10
+	RunState.player_current_hp = RunState.player_max_hp
+	var combat_node := MapNode.new(0, MapNode.NodeType.COMBAT, 0)
+	var encounter := RunState.build_encounter_for_node(combat_node)
+	assert_eq(encounter.player.max_hp, RunState.player_max_hp)
+
+func test_build_encounter_for_node_applies_battle_fury_passive():
+	RunState.start_new_run(DwarfContent.get_class_resource())
+	RunState.unlocked_skill_nodes.append(&"battle_fury")
+	var combat_node := MapNode.new(0, MapNode.NodeType.COMBAT, 0)
+	var encounter := RunState.build_encounter_for_node(combat_node)
+	assert_eq(encounter.player.get_status_stacks(&"strength"), 2)
+
+func test_build_encounter_for_node_applies_unyielding_passive():
+	RunState.start_new_run(DwarfContent.get_class_resource())
+	RunState.unlocked_skill_nodes.append(&"unyielding")
+	var combat_node := MapNode.new(0, MapNode.NodeType.COMBAT, 0)
+	var encounter := RunState.build_encounter_for_node(combat_node)
+	assert_eq(encounter.player.block, 5)
+
+func test_build_encounter_for_node_without_any_skill_nodes_has_no_bonuses():
+	RunState.start_new_run(DwarfContent.get_class_resource())
+	var combat_node := MapNode.new(0, MapNode.NodeType.COMBAT, 0)
+	var encounter := RunState.build_encounter_for_node(combat_node)
+	assert_eq(encounter.player.baseline_strike_bonus, 0)
+	assert_eq(encounter.player.baseline_block_bonus, 0)
+	assert_eq(encounter.player.block, 0)
+
 func test_heal_clamps_to_max_hp():
 	RunState.start_new_run(DwarfContent.get_class_resource())
 	RunState.player_current_hp = RunState.player_max_hp - 3
