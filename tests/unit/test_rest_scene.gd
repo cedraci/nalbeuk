@@ -1,4 +1,4 @@
-extends GutTest
+extends RunStateTest
 
 func test_heal_button_heals_and_emits_node_completed():
 	RunState.start_new_run(DwarfContent.get_class_resource())

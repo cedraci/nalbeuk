@@ -1,4 +1,4 @@
-extends GutTest
+extends RunStateTest
 
 func _make_actor(hp: int) -> CombatActor:
 	return CombatActor.new("Test", hp)

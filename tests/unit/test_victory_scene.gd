@@ -1,4 +1,4 @@
-extends GutTest
+extends RunStateTest
 
 func test_ready_shows_the_floor_reached():
 	RunState.start_new_run(DwarfContent.get_class_resource())

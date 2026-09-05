@@ -1,4 +1,4 @@
-extends GutTest
+extends RunStateTest
 
 func test_start_new_run_resets_state_from_class_resource():
 	var class_res := DwarfContent.get_class_resource()

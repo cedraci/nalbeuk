@@ -1,4 +1,4 @@
-extends GutTest
+extends RunStateTest
 
 func test_display_creates_one_column_per_floor():
 	var map_view := MapView.new()

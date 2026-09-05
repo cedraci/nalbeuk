@@ -1,4 +1,4 @@
-extends GutTest
+extends RunStateTest
 
 func test_equip_button_for_owned_item_equips_it_and_refreshes():
 	RunState.start_new_run(DwarfContent.get_class_resource())

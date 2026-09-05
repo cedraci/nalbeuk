@@ -1,4 +1,4 @@
-extends GutTest
+extends RunStateTest
 
 func test_root_node_available_when_a_point_is_banked():
 	RunState.start_new_run(DwarfContent.get_class_resource())

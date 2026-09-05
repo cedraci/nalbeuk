@@ -1,4 +1,4 @@
-extends GutTest
+extends RunStateTest
 
 func test_ready_shows_gold_and_one_button_per_offering():
 	RunState.start_new_run(DwarfContent.get_class_resource())

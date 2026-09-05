@@ -1,4 +1,4 @@
-extends GutTest
+extends RunStateTest
 
 func test_ready_starts_a_run_and_shows_the_map():
 	var scene := RunScene.new()
