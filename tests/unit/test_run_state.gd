@@ -298,3 +298,53 @@ func test_unequip_slot_clears_it():
 	RunState.unequip_slot(EquipmentResource.Slot.WEAPON)
 	assert_null(RunState.equipped_weapon)
 	assert_true(RunState.owned_equipment.has(sword))
+
+func test_start_new_run_resets_relic_state():
+	RunState.unlocked_relics = [&"iron_ration"]
+	RunState.relic_bonus_strength = 2
+	RunState.relic_bonus_block = 2
+	RunState.relic_gold_bonus = 5
+	RunState.start_new_run(DwarfContent.get_class_resource())
+	assert_eq(RunState.unlocked_relics.size(), 0)
+	assert_eq(RunState.relic_bonus_strength, 0)
+	assert_eq(RunState.relic_bonus_block, 0)
+	assert_eq(RunState.relic_gold_bonus, 0)
+
+func test_grant_relic_applies_strength_and_block_deltas():
+	RunState.start_new_run(DwarfContent.get_class_resource())
+	var relic := RelicResource.new()
+	relic.id = &"test_relic"
+	relic.strength_delta = 2
+	relic.block_delta = 3
+	RunState.grant_relic(relic)
+	assert_eq(RunState.relic_bonus_strength, 2)
+	assert_eq(RunState.relic_bonus_block, 3)
+	assert_true(RunState.unlocked_relics.has(&"test_relic"))
+
+func test_grant_relic_bakes_vitality_into_max_hp_permanently():
+	RunState.start_new_run(DwarfContent.get_class_resource())
+	var max_hp_before: int = RunState.player_max_hp
+	var relic := RelicResource.new()
+	relic.id = &"test_relic"
+	relic.vitality_delta = 3
+	RunState.grant_relic(relic)
+	assert_eq(RunState.player_max_hp, max_hp_before + 6)
+	assert_eq(RunState.player_current_hp, RunState.player_max_hp)
+
+func test_grant_relic_applies_gold_bonus():
+	RunState.start_new_run(DwarfContent.get_class_resource())
+	var relic := RelicResource.new()
+	relic.id = &"test_relic"
+	relic.gold_bonus_per_reward = 5
+	RunState.grant_relic(relic)
+	assert_eq(RunState.relic_gold_bonus, 5)
+
+func test_granting_the_same_relic_twice_stacks():
+	RunState.start_new_run(DwarfContent.get_class_resource())
+	var relic := RelicResource.new()
+	relic.id = &"test_relic"
+	relic.strength_delta = 2
+	RunState.grant_relic(relic)
+	RunState.grant_relic(relic)
+	assert_eq(RunState.relic_bonus_strength, 4)
+	assert_eq(RunState.unlocked_relics.count(&"test_relic"), 2)

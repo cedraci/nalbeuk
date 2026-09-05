@@ -34,6 +34,10 @@ var owned_equipment: Array[EquipmentResource] = []
 var equipped_weapon: EquipmentResource = null
 var equipped_armor: EquipmentResource = null
 var equipped_trinket: EquipmentResource = null
+var unlocked_relics: Array[StringName] = []
+var relic_bonus_strength: int = 0
+var relic_bonus_block: int = 0
+var relic_gold_bonus: int = 0
 
 func start_new_run(p_class_resource: ClassResource) -> void:
 	class_resource = p_class_resource
@@ -52,6 +56,10 @@ func start_new_run(p_class_resource: ClassResource) -> void:
 	equipped_weapon = null
 	equipped_armor = null
 	equipped_trinket = null
+	unlocked_relics = []
+	relic_bonus_strength = 0
+	relic_bonus_block = 0
+	relic_gold_bonus = 0
 	rng = RandomNumberGenerator.new()
 	rng.randomize()
 	map = MapGraph.generate(rng)
@@ -99,6 +107,15 @@ func unequip_slot(slot: EquipmentResource.Slot) -> void:
 			equipped_armor = null
 		EquipmentResource.Slot.TRINKET:
 			equipped_trinket = null
+
+func grant_relic(relic: RelicResource) -> void:
+	unlocked_relics.append(relic.id)
+	relic_bonus_strength += relic.strength_delta
+	relic_bonus_block += relic.block_delta
+	relic_gold_bonus += relic.gold_bonus_per_reward
+	var hp_gain: int = relic.vitality_delta * 2
+	player_max_hp += hp_gain
+	player_current_hp += hp_gain
 
 func _apply_passive(passive_id: StringName, player: CombatActor) -> void:
 	match passive_id:
