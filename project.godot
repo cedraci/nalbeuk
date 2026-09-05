@@ -17,6 +17,7 @@ run/main_scene="res://scripts/ui/run/run_scene.tscn"
 [autoload]
 
 MetaState="*res://scripts/meta/meta_state.gd"
+SaveManager="*res://scripts/meta/save_manager.gd"
 RunState="*res://scripts/run/run_state.gd"
 
 [editor_plugins]
