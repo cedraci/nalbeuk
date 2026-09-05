@@ -28,3 +28,21 @@ func test_potion_resource_apply_grants_strength_stacks_when_set():
 	var actor := CombatActor.new("Hero", 20)
 	potion.apply(actor)
 	assert_eq(actor.get_status_stacks(&"strength"), 3)
+
+func test_potion_resource_apply_heals_when_heal_amount_set():
+	var potion := PotionResource.new()
+	potion.heal_amount = 10
+	var actor := CombatActor.new("Hero", 20)
+	actor.take_damage(15)
+	potion.apply(actor)
+	assert_eq(actor.current_hp, 15)
+
+func test_potion_resource_apply_does_both_when_both_set():
+	var potion := PotionResource.new()
+	potion.heal_amount = 5
+	potion.strength_stacks = 2
+	var actor := CombatActor.new("Hero", 20)
+	actor.take_damage(10)
+	potion.apply(actor)
+	assert_eq(actor.current_hp, 15)
+	assert_eq(actor.get_status_stacks(&"strength"), 2)

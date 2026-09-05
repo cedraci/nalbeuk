@@ -21,7 +21,7 @@ static func get_skill_tree() -> Array[SkillNode]:
 		SkillNode.new(
 			&"battle_fury", "Battle Fury",
 			"Start every fight already furious: +2 Strength stacks.",
-			SkillNode.Branch.OFFENSE, &"heavy_swing", 0, 0, 0, &"battle_fury"
+			SkillNode.Branch.OFFENSE, &"heavy_swing", 0, 0, 0, &"bonus_strength_stack"
 		),
 		SkillNode.new(
 			&"thick_hide", "Thick Hide",
@@ -36,7 +36,7 @@ static func get_skill_tree() -> Array[SkillNode]:
 		SkillNode.new(
 			&"unyielding", "Unyielding",
 			"Brace before the first blow lands: start combat with 5 Block.",
-			SkillNode.Branch.DEFENSE, &"reinforced_guard", 0, 0, 0, &"unyielding"
+			SkillNode.Branch.DEFENSE, &"reinforced_guard", 0, 0, 0, &"bonus_starting_block"
 		),
 	]
 	return nodes

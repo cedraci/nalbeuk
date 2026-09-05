@@ -27,6 +27,9 @@ func take_damage(amount: int) -> void:
 	if current_hp == 0:
 		died.emit()
 
+func heal(amount: int) -> void:
+	current_hp = min(current_hp + amount, max_hp) as int
+
 func add_block(amount: int) -> void:
 	block += amount
 

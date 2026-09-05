@@ -45,3 +45,21 @@ func test_died_signal_emitted_when_hp_reaches_zero():
 func test_baseline_block_bonus_defaults_to_zero():
 	var actor := CombatActor.new("Hero", 20)
 	assert_eq(actor.baseline_block_bonus, 0)
+
+func test_heal_increases_current_hp():
+	var actor := CombatActor.new("Hero", 20)
+	actor.take_damage(10)
+	actor.heal(5)
+	assert_eq(actor.current_hp, 15)
+
+func test_heal_clamps_to_max_hp():
+	var actor := CombatActor.new("Hero", 20)
+	actor.take_damage(3)
+	actor.heal(100)
+	assert_eq(actor.current_hp, 20)
+
+func test_heal_does_not_affect_block():
+	var actor := CombatActor.new("Hero", 20)
+	actor.add_block(4)
+	actor.heal(5)
+	assert_eq(actor.block, 4)

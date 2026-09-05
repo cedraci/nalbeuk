@@ -71,6 +71,15 @@ func build_encounter_for_node(node: MapNode) -> CombatEncounter:
 	var enemy := ActorFactory.build_enemy_actor(enemy_res)
 	return CombatEncounter.new(player, deck, enemy, enemy_res.moves, rng)
 
+func _apply_passive(passive_id: StringName, player: CombatActor) -> void:
+	match passive_id:
+		&"bonus_strength_stack":
+			player.add_status(&"strength", 2)
+		&"bonus_starting_block":
+			player.starting_block += 5
+		_:
+			pass
+
 func heal(amount: int) -> void:
 	player_current_hp = min(player_current_hp + amount, player_max_hp) as int
 
