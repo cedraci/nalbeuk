@@ -14,6 +14,10 @@ config/name="Party Deckbuilder"
 config/features=PackedStringArray("4.7", "Forward Plus")
 run/main_scene="res://scripts/ui/combat/combat_demo.tscn"
 
+[autoload]
+
+RunState="*res://scripts/run/run_state.gd"
+
 [editor_plugins]
 
 enabled=PackedStringArray("res://addons/gut/plugin.cfg")
