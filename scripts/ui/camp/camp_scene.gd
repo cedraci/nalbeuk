@@ -4,9 +4,12 @@ class_name CampScene
 signal skill_tree_requested
 signal inventory_requested
 signal run_requested
+signal continue_requested
+signal abandon_requested
 
 # The single story hook this plan ships; Camp dialogue proper comes later.
 const FLAVOR_LINE := "The party argues over who lost the map."
+const SUSPENDED_FLAVOR_LINE := "The party is still out there, arguing about which way is north."
 const EMPTY_SLOT := "— empty —"
 
 var status_label: Label
@@ -15,6 +18,8 @@ var flavor_label: Label
 var skill_tree_button: Button
 var inventory_button: Button
 var start_run_button: Button
+var continue_run_button: Button
+var abandon_run_button: Button
 
 func _ready() -> void:
 	set_anchors_preset(Control.PRESET_FULL_RECT)
@@ -53,15 +58,34 @@ func _ready() -> void:
 	start_run_button.pressed.connect(_on_start_run_pressed)
 	buttons_hbox.add_child(start_run_button)
 
+	continue_run_button = Button.new()
+	continue_run_button.text = "Continue Run"
+	continue_run_button.pressed.connect(_on_continue_run_pressed)
+	buttons_hbox.add_child(continue_run_button)
+
+	abandon_run_button = Button.new()
+	abandon_run_button.text = "Abandon Run"
+	abandon_run_button.pressed.connect(_on_abandon_run_pressed)
+	buttons_hbox.add_child(abandon_run_button)
+
 	refresh()
 
 func refresh() -> void:
+	var suspended: bool = SaveManager.has_run_snapshot()
 	status_label.text = _status_text()
 	gear_label.text = "Weapon: %s   Armor: %s   Trinket: %s" % [
 		_slot_name(RunState.equipped_weapon),
 		_slot_name(RunState.equipped_armor),
 		_slot_name(RunState.equipped_trinket),
 	]
+	flavor_label.text = SUSPENDED_FLAVOR_LINE if suspended else FLAVOR_LINE
+	# While a run is suspended, gear and skills are frozen with it: only
+	# Continue / Abandon are offered (the map's own buttons return on resume).
+	skill_tree_button.visible = not suspended
+	inventory_button.visible = not suspended
+	start_run_button.visible = not suspended
+	continue_run_button.visible = suspended
+	abandon_run_button.visible = suspended
 
 func _status_text() -> String:
 	if RunState.level >= RunState.MAX_LEVEL:
@@ -80,3 +104,9 @@ func _on_inventory_pressed() -> void:
 
 func _on_start_run_pressed() -> void:
 	run_requested.emit()
+
+func _on_continue_run_pressed() -> void:
+	continue_requested.emit()
+
+func _on_abandon_run_pressed() -> void:
+	abandon_requested.emit()
