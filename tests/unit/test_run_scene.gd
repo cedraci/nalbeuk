@@ -95,3 +95,35 @@ func test_new_run_requested_from_game_over_starts_a_fresh_run_and_shows_map():
 	scene.game_over_scene.new_run_button.pressed.emit()
 	assert_eq(scene.map_view.get_parent(), scene)
 	assert_eq(RunState.current_floor, 0)
+
+func test_pressing_skill_tree_button_shows_skill_tree_scene():
+	var scene := RunScene.new()
+	add_child_autofree(scene)
+	scene.map_view.skill_tree_requested.emit()
+	assert_eq(scene.skill_tree_scene.get_parent(), scene)
+
+func test_skill_tree_back_returns_to_map_without_advancing_position():
+	var scene := RunScene.new()
+	add_child_autofree(scene)
+	var starting_node := RunState.current_node
+	scene.map_view.skill_tree_requested.emit()
+	scene.skill_tree_scene.back_requested.emit()
+	assert_eq(scene.map_view.get_parent(), scene)
+	assert_eq(RunState.current_node, starting_node)
+
+func test_winning_a_combat_node_grants_xp():
+	var scene := RunScene.new()
+	add_child_autofree(scene)
+	var combat_node := MapNode.new(9999, MapNode.NodeType.COMBAT, 0)
+	scene.map_view.node_selected.emit(combat_node)
+	scene.combat_scene.combat_dismissed.emit(true)
+	assert_eq(RunState.xp, RunState.COMBAT_XP_REWARD)
+
+func test_winning_an_elite_node_grants_enough_xp_to_level_up():
+	var scene := RunScene.new()
+	add_child_autofree(scene)
+	var elite_node := MapNode.new(9999, MapNode.NodeType.ELITE, 0)
+	scene.map_view.node_selected.emit(elite_node)
+	scene.combat_scene.combat_dismissed.emit(true)
+	assert_eq(RunState.level, 2)
+	assert_eq(RunState.skill_points, 1)

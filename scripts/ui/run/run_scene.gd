@@ -8,6 +8,7 @@ var event_scene: EventScene
 var shop_scene: ShopScene
 var victory_scene: VictoryScene
 var game_over_scene: GameOverScene
+var skill_tree_scene: SkillTreeScene
 
 var _current_child: Control
 
@@ -16,6 +17,7 @@ func _ready() -> void:
 	map_view = MapView.new()
 	map_view.set_anchors_preset(Control.PRESET_FULL_RECT)
 	map_view.node_selected.connect(_on_map_node_selected)
+	map_view.skill_tree_requested.connect(_on_skill_tree_requested)
 	add_child(map_view)
 	RunState.start_new_run(DwarfContent.get_class_resource())
 	_show_map()
@@ -39,6 +41,15 @@ func _show_map() -> void:
 	map_view.display(RunState.map, RunState.current_node)
 	_swap_to(map_view)
 
+func _on_skill_tree_requested() -> void:
+	skill_tree_scene = SkillTreeScene.new()
+	skill_tree_scene.set_anchors_preset(Control.PRESET_FULL_RECT)
+	skill_tree_scene.back_requested.connect(_on_skill_tree_back_requested)
+	_swap_to(skill_tree_scene)
+
+func _on_skill_tree_back_requested() -> void:
+	_show_map()
+
 func _on_map_node_selected(node: MapNode) -> void:
 	match node.node_type:
 		MapNode.NodeType.COMBAT, MapNode.NodeType.ELITE, MapNode.NodeType.BOSS:
@@ -61,7 +72,9 @@ func _start_combat(node: MapNode) -> void:
 func _on_combat_dismissed(player_won: bool, node: MapNode) -> void:
 	if player_won:
 		var gold_reward: int = _gold_reward_for(node.node_type)
+		var xp_reward: int = _xp_reward_for(node.node_type)
 		RunState.apply_combat_reward(gold_reward, combat_scene.encounter.player.current_hp)
+		RunState.grant_xp(xp_reward)
 		RunState.mark_node_visited_and_advance(node)
 		if node.node_type == MapNode.NodeType.BOSS:
 			_show_victory()
@@ -79,6 +92,15 @@ func _gold_reward_for(node_type: MapNode.NodeType) -> int:
 			return RunState.BOSS_GOLD_REWARD
 		_:
 			return RunState.COMBAT_GOLD_REWARD
+
+func _xp_reward_for(node_type: MapNode.NodeType) -> int:
+	match node_type:
+		MapNode.NodeType.ELITE:
+			return RunState.ELITE_XP_REWARD
+		MapNode.NodeType.BOSS:
+			return RunState.BOSS_XP_REWARD
+		_:
+			return RunState.COMBAT_XP_REWARD
 
 func _start_event(node: MapNode) -> void:
 	event_scene = EventScene.new()
