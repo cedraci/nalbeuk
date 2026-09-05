@@ -729,13 +729,14 @@ From the repo root:
 
 ```bash
 for f in test_combat_scene test_event_scene test_game_over_scene test_inventory_scene test_map_view test_rest_scene test_run_scene test_run_state test_shop_scene test_skill_tree_scene test_victory_scene; do
-  sed -i '1s/^extends GutTest$/extends RunStateTest/' "tests/unit/$f.gd"
+  sed -i '1s/^extends GutTest\r\?$/extends RunStateTest/' "tests/unit/$f.gd"
 done
 grep -L "^extends RunStateTest" tests/unit/test_combat_scene.gd tests/unit/test_event_scene.gd tests/unit/test_game_over_scene.gd tests/unit/test_inventory_scene.gd tests/unit/test_map_view.gd tests/unit/test_rest_scene.gd tests/unit/test_run_scene.gd tests/unit/test_run_state.gd tests/unit/test_shop_scene.gd tests/unit/test_skill_tree_scene.gd tests/unit/test_victory_scene.gd
 ```
 
 Expected: the `grep -L` prints nothing (every file now extends
-`RunStateTest`).
+`RunStateTest`). The `\r\?` matters: checked-out files are CRLF on this
+machine, and a plain `$` would not match.
 
 - [ ] **Step 3: Run the full suite**
 
@@ -935,9 +936,7 @@ func _reset_run_only_state() -> void:
 
 - [ ] **Step 4: Run tests to verify they pass**
 
-Run: `"C:/Tools/Godot/Godot_v4.7-stable_win64_console.gd" --headless -s addons/gut/gut_cmdln.gd -gdir=tests/unit -gtest=test_run_state.gd -gexit`
-(use the `_console.exe` binary — the `.gd` above is a typo guard: the
-command is identical to the one in Step 2.)
+Run: `"C:/Tools/Godot/Godot_v4.7-stable_win64_console.exe" --headless -s addons/gut/gut_cmdln.gd -gdir=tests/unit -gtest=test_run_state.gd -gexit`
 Expected: PASS, including every pre-existing test — they all run under
 `RunStateTest.before_each()`, so `MetaState` is at defaults and
 `start_new_run` seeds exactly the zeros those tests assumed (e.g.
@@ -1732,7 +1731,7 @@ boot behaviour by hand):
 python - <<'PY'
 import io, re
 p = 'tests/unit/test_run_scene.gd'
-s = io.open(p, encoding='utf-8').read()
+s = io.open(p, encoding='utf-8').read().replace('\r\n', '\n')  # working copy is CRLF
 s = s.replace("\tvar scene := RunScene.new()\n\tadd_child_autofree(scene)\n", "\tvar scene := _boot_into_run()\n")
 helper = '''extends RunStateTest
 
@@ -1980,13 +1979,13 @@ Expected: PASS — every rewritten pre-existing test plus the 9 new ones.
 
 Then the full suite:
 `"C:/Tools/Godot/Godot_v4.7-stable_win64_console.exe" --headless -s addons/gut/gut_cmdln.gd -gdir=tests/unit -gexit`
-Expected: PASS, 39 scripts (35 original + `test_meta_state`,
-`test_save_manager`, `test_camp_scene`, and none for `run_state_test.gd`
-or `run_outcome.gd`), 263 tests. Compare the totals: 208 (Plan 2D) + 4
-(T1) + 6 (T2) + 8 (T3) + 6 (T5) + 6 (T6) + 4 (T7) + 6 (T8) + 3 (T9: 7
-tests replacing 4) + 9 (T10) = 260 → **if the summary says 260 rather than
-263, recount the Task 9 delta (3 new tests net) — either total is
-acceptable as long as every script listed above is present and all pass.**
+Expected: PASS, 38 scripts (35 original + `test_meta_state`,
+`test_save_manager`, `test_camp_scene`; `run_state_test.gd` and
+`run_outcome.gd` are not test scripts), 260 tests: 208 (Plan 2D) + 4 (T1)
++ 6 (T2) + 8 (T3) + 6 (T5) + 6 (T6) + 4 (T7) + 6 (T8) + 3 (T9: 7 tests
+replace 4) + 9 (T10). A different total means a script was not imported
+or a test was lost in the Step 1 rewrite — stop and compare the per-script
+list against this one.
 
 - [ ] **Step 5: Commit**
 
