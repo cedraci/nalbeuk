@@ -42,34 +42,73 @@ var relic_bonus_strength: int = 0
 var relic_bonus_block: int = 0
 var relic_gold_bonus: int = 0
 var potions: Array[PotionResource] = []
+var in_run: bool = false
 
 func start_new_run(p_class_resource: ClassResource) -> void:
 	class_resource = p_class_resource
 	persistent_stats = PersistentStats.new()
-	deck = class_resource.starting_deck.duplicate()
-	player_max_hp = persistent_stats.compute_max_hp(class_resource.base_hp)
-	player_current_hp = player_max_hp
-	gold = 0
-	level = 1
-	xp = 0
-	skill_points = 0
-	unlocked_skill_nodes = []
-	level_bonus_strength = 0
-	level_bonus_block = 0
-	owned_equipment = []
-	equipped_weapon = null
-	equipped_armor = null
-	equipped_trinket = null
-	unlocked_relics = []
-	relic_bonus_strength = 0
-	relic_bonus_block = 0
-	relic_gold_bonus = 0
-	potions = []
+	load_character_from_meta()
+	_reset_run_only_state()
 	rng = RandomNumberGenerator.new()
 	rng.randomize()
 	map = MapGraph.generate(rng)
 	current_floor = 0
 	current_node = map.floors[0][0]
+	in_run = true
+
+func enter_camp(p_class_resource: ClassResource) -> void:
+	class_resource = p_class_resource
+	persistent_stats = PersistentStats.new()
+	load_character_from_meta()
+	_reset_run_only_state()
+	rng = RandomNumberGenerator.new()
+	rng.randomize()
+	map = null
+	current_floor = 0
+	current_node = null
+	in_run = false
+
+func load_character_from_meta() -> void:
+	level = MetaState.level
+	xp = MetaState.xp
+	skill_points = MetaState.skill_points
+	unlocked_skill_nodes = MetaState.unlocked_skill_nodes.duplicate()
+	owned_equipment = []
+	for item_id in MetaState.owned_equipment_ids:
+		var item := DwarfEquipment.get_by_id(item_id)
+		if item != null:
+			owned_equipment.append(item)
+	equipped_weapon = _find_owned(MetaState.equipped_weapon_id)
+	equipped_armor = _find_owned(MetaState.equipped_armor_id)
+	equipped_trinket = _find_owned(MetaState.equipped_trinket_id)
+	level_bonus_strength = 0
+	level_bonus_block = 0
+	var vitality_total: int = 0
+	for node_id in unlocked_skill_nodes:
+		var node := DwarfSkillTree.get_node_by_id(node_id)
+		if node != null:
+			level_bonus_strength += node.strength_delta
+			level_bonus_block += node.block_delta
+			vitality_total += node.vitality_delta
+	player_max_hp = persistent_stats.compute_max_hp(class_resource.base_hp) + vitality_total * 2
+	player_current_hp = player_max_hp
+
+func _find_owned(item_id: StringName) -> EquipmentResource:
+	if item_id == &"":
+		return null
+	for item in owned_equipment:
+		if item.id == item_id:
+			return item
+	return null
+
+func _reset_run_only_state() -> void:
+	deck = class_resource.starting_deck.duplicate()
+	gold = 0
+	unlocked_relics = []
+	relic_bonus_strength = 0
+	relic_bonus_block = 0
+	relic_gold_bonus = 0
+	potions = []
 
 func build_encounter_for_node(node: MapNode) -> CombatEncounter:
 	var player := ActorFactory.build_player_actor(class_resource, persistent_stats)

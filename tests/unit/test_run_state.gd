@@ -433,3 +433,77 @@ func test_build_encounter_for_node_composes_skill_tree_equipment_and_relics():
 	var combat_node := MapNode.new(0, MapNode.NodeType.COMBAT, 0)
 	var encounter := RunState.build_encounter_for_node(combat_node)
 	assert_eq(encounter.player.baseline_strike_bonus, 4 + 2 + hammer.strength_delta)
+
+func test_start_new_run_seeds_level_xp_and_skills_from_meta_state():
+	MetaState.level = 3
+	MetaState.xp = 7
+	MetaState.skill_points = 1
+	MetaState.unlocked_skill_nodes = [&"dwarven_grit", &"sharpened_pick"]
+	RunState.start_new_run(DwarfContent.get_class_resource())
+	assert_eq(RunState.level, 3)
+	assert_eq(RunState.xp, 7)
+	assert_eq(RunState.skill_points, 1)
+	assert_eq(RunState.unlocked_skill_nodes, [&"dwarven_grit", &"sharpened_pick"] as Array[StringName])
+	assert_true(RunState.in_run)
+
+func test_start_new_run_recomputes_bonuses_and_max_hp_from_unlocked_nodes():
+	# dwarven_grit: +1 STR, +1 VIT. sharpened_pick: +2 STR. thick_hide: +3 VIT. reinforced_guard: +3 BLK.
+	MetaState.unlocked_skill_nodes = [&"dwarven_grit", &"sharpened_pick", &"thick_hide", &"reinforced_guard"]
+	var class_res := DwarfContent.get_class_resource()
+	RunState.start_new_run(class_res)
+	assert_eq(RunState.level_bonus_strength, 3)
+	assert_eq(RunState.level_bonus_block, 3)
+	assert_eq(RunState.player_max_hp, class_res.base_hp + 2 * 4)
+	assert_eq(RunState.player_current_hp, RunState.player_max_hp)
+
+func test_start_new_run_rehydrates_owned_and_equipped_gear_from_meta_state():
+	MetaState.owned_equipment_ids = [&"rusty_shortsword", &"rusty_shortsword", &"chainmail"]
+	MetaState.equipped_weapon_id = &"rusty_shortsword"
+	MetaState.equipped_armor_id = &"chainmail"
+	RunState.start_new_run(DwarfContent.get_class_resource())
+	assert_eq(RunState.owned_equipment.size(), 3)
+	assert_not_null(RunState.equipped_weapon)
+	assert_eq(RunState.equipped_weapon.id, &"rusty_shortsword")
+	assert_true(RunState.owned_equipment.has(RunState.equipped_weapon), "The equipped instance is one of the owned instances.")
+	assert_eq(RunState.equipped_armor.id, &"chainmail")
+	assert_null(RunState.equipped_trinket)
+
+func test_start_new_run_still_resets_run_only_state():
+	MetaState.level = 4
+	RunState.start_new_run(DwarfContent.get_class_resource())
+	RunState.gold = 50
+	RunState.grant_relic(DwarfRelics.get_all_relics()[0])
+	RunState.add_potion(DwarfPotions.get_all_potions()[0])
+	RunState.buy_card(DwarfContent.get_shop_offerings()[0], 0)
+	var class_res := DwarfContent.get_class_resource()
+	RunState.start_new_run(class_res)
+	assert_eq(RunState.gold, 0)
+	assert_eq(RunState.unlocked_relics.size(), 0)
+	assert_eq(RunState.relic_bonus_strength, 0)
+	assert_eq(RunState.potions.size(), 0)
+	assert_eq(RunState.deck.size(), class_res.starting_deck.size())
+	assert_eq(RunState.level, 4, "Persistent state is kept across runs.")
+
+func test_enter_camp_seeds_the_character_but_starts_no_run():
+	MetaState.level = 2
+	MetaState.owned_equipment_ids = [&"leather_vest"]
+	RunState.start_new_run(DwarfContent.get_class_resource())
+	RunState.gold = 30
+	RunState.enter_camp(DwarfContent.get_class_resource())
+	assert_false(RunState.in_run)
+	assert_null(RunState.map)
+	assert_null(RunState.current_node)
+	assert_eq(RunState.level, 2)
+	assert_eq(RunState.owned_equipment.size(), 1)
+	assert_eq(RunState.gold, 0)
+	assert_eq(RunState.unlocked_relics.size(), 0)
+	assert_eq(RunState.potions.size(), 0)
+	assert_eq(RunState.player_current_hp, RunState.player_max_hp)
+
+func test_build_encounter_after_seeding_applies_persistent_skill_passives():
+	MetaState.unlocked_skill_nodes = [&"dwarven_grit", &"thick_hide", &"reinforced_guard", &"unyielding"]
+	RunState.start_new_run(DwarfContent.get_class_resource())
+	var combat_node := MapNode.new(0, MapNode.NodeType.COMBAT, 0)
+	var encounter := RunState.build_encounter_for_node(combat_node)
+	encounter.start_player_turn()
+	assert_eq(encounter.player.block, 5, "Unyielding restored from the save still gives 5 starting Block on turn 1.")
