@@ -388,3 +388,48 @@ func test_apply_combat_reward_adds_relic_gold_bonus():
 	RunState.gold = 0
 	RunState.apply_combat_reward(10, RunState.player_current_hp)
 	assert_eq(RunState.gold, 15)
+
+func test_build_encounter_for_node_applies_equipped_weapon_and_armor():
+	RunState.start_new_run(DwarfContent.get_class_resource())
+	var equipment := DwarfEquipment.get_all_equipment()
+	var sword: EquipmentResource = equipment[0]
+	var vest: EquipmentResource = equipment[2]
+	RunState.grant_equipment(sword)
+	RunState.grant_equipment(vest)
+	RunState.equip_item(sword)
+	RunState.equip_item(vest)
+	var combat_node := MapNode.new(0, MapNode.NodeType.COMBAT, 0)
+	var encounter := RunState.build_encounter_for_node(combat_node)
+	assert_eq(encounter.player.baseline_strike_bonus, sword.strength_delta)
+	assert_eq(encounter.player.baseline_block_bonus, vest.block_delta)
+
+func test_build_encounter_for_node_applies_equipped_trinket_passive():
+	RunState.start_new_run(DwarfContent.get_class_resource())
+	var guardian_amulet: EquipmentResource = DwarfEquipment.get_all_equipment()[5]
+	RunState.grant_equipment(guardian_amulet)
+	RunState.equip_item(guardian_amulet)
+	var combat_node := MapNode.new(0, MapNode.NodeType.COMBAT, 0)
+	var encounter := RunState.build_encounter_for_node(combat_node)
+	encounter.start_player_turn()
+	assert_eq(encounter.player.block, 5, "Guardian Amulet's starting-block passive should apply after the first turn begins.")
+
+func test_build_encounter_for_node_applies_relic_bonuses():
+	RunState.start_new_run(DwarfContent.get_class_resource())
+	RunState.relic_bonus_strength = 2
+	RunState.relic_bonus_block = 3
+	var combat_node := MapNode.new(0, MapNode.NodeType.COMBAT, 0)
+	var encounter := RunState.build_encounter_for_node(combat_node)
+	assert_eq(encounter.player.baseline_strike_bonus, 2)
+	assert_eq(encounter.player.baseline_block_bonus, 3)
+
+func test_build_encounter_for_node_composes_skill_tree_equipment_and_relics():
+	RunState.start_new_run(DwarfContent.get_class_resource())
+	RunState.level_bonus_strength = 4
+	RunState.relic_bonus_strength = 2
+	var equipment := DwarfEquipment.get_all_equipment()
+	var hammer: EquipmentResource = equipment[1]
+	RunState.grant_equipment(hammer)
+	RunState.equip_item(hammer)
+	var combat_node := MapNode.new(0, MapNode.NodeType.COMBAT, 0)
+	var encounter := RunState.build_encounter_for_node(combat_node)
+	assert_eq(encounter.player.baseline_strike_bonus, 4 + 2 + hammer.strength_delta)

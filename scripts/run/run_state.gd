@@ -73,12 +73,19 @@ func build_encounter_for_node(node: MapNode) -> CombatEncounter:
 	var player := ActorFactory.build_player_actor(class_resource, persistent_stats)
 	player.max_hp = player_max_hp
 	player.current_hp = min(player_current_hp, player.max_hp) as int
-	player.baseline_strike_bonus += level_bonus_strength
-	player.baseline_block_bonus += level_bonus_block
-	if unlocked_skill_nodes.has(&"battle_fury"):
-		player.add_status(&"strength", 2)
-	if unlocked_skill_nodes.has(&"unyielding"):
-		player.starting_block = 5
+	var equip_strength: int = 0
+	var equip_block: int = 0
+	for item in [equipped_weapon, equipped_armor, equipped_trinket]:
+		if item != null:
+			equip_strength += item.strength_delta
+			equip_block += item.block_delta
+			_apply_passive(item.passive_id, player)
+	player.baseline_strike_bonus += level_bonus_strength + relic_bonus_strength + equip_strength
+	player.baseline_block_bonus += level_bonus_block + relic_bonus_block + equip_block
+	for node_id in unlocked_skill_nodes:
+		for skill_node in DwarfSkillTree.get_skill_tree():
+			if skill_node.id == node_id:
+				_apply_passive(skill_node.passive_id, player)
 	var enemy_res: EnemyResource
 	match node.node_type:
 		MapNode.NodeType.ELITE:
