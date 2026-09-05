@@ -507,3 +507,65 @@ func test_build_encounter_after_seeding_applies_persistent_skill_passives():
 	var encounter := RunState.build_encounter_for_node(combat_node)
 	encounter.start_player_turn()
 	assert_eq(encounter.player.block, 5, "Unyielding restored from the save still gives 5 starting Block on turn 1.")
+
+func test_grant_xp_writes_through_to_meta_state_and_saves():
+	RunState.start_new_run(DwarfContent.get_class_resource())
+	RunState.grant_xp(25)
+	assert_eq(RunState.level, 2)
+	assert_eq(MetaState.level, 2)
+	assert_eq(MetaState.xp, 5)
+	assert_eq(MetaState.skill_points, 1)
+	MetaState.reset()
+	assert_true(SaveManager.load_meta(), "grant_xp saved to disk.")
+	assert_eq(MetaState.level, 2)
+	assert_eq(MetaState.xp, 5)
+
+func test_unlock_skill_node_writes_through_to_meta_state_and_saves():
+	RunState.start_new_run(DwarfContent.get_class_resource())
+	RunState.skill_points = 1
+	var root: SkillNode = DwarfSkillTree.get_node_by_id(&"dwarven_grit")
+	assert_true(RunState.unlock_skill_node(root))
+	assert_eq(MetaState.unlocked_skill_nodes, [&"dwarven_grit"] as Array[StringName])
+	assert_eq(MetaState.skill_points, 0)
+	MetaState.reset()
+	SaveManager.load_meta()
+	assert_eq(MetaState.unlocked_skill_nodes, [&"dwarven_grit"] as Array[StringName])
+
+func test_failed_unlock_does_not_touch_meta_state():
+	RunState.start_new_run(DwarfContent.get_class_resource())
+	RunState.skill_points = 0
+	var root: SkillNode = DwarfSkillTree.get_node_by_id(&"dwarven_grit")
+	assert_false(RunState.unlock_skill_node(root))
+	assert_eq(MetaState.unlocked_skill_nodes.size(), 0)
+	assert_false(SaveManager.load_meta(), "Nothing was saved.")
+
+func test_gear_changes_inside_a_run_are_not_written_through():
+	RunState.start_new_run(DwarfContent.get_class_resource())
+	var sword: EquipmentResource = DwarfEquipment.get_by_id(&"rusty_shortsword")
+	RunState.grant_equipment(sword)
+	RunState.equip_item(sword)
+	assert_eq(MetaState.owned_equipment_ids.size(), 0)
+	assert_eq(MetaState.equipped_weapon_id, &"")
+	assert_false(SaveManager.load_meta(), "Nothing was saved.")
+
+func test_gear_changes_at_camp_are_written_through_and_saved():
+	MetaState.owned_equipment_ids = [&"rusty_shortsword", &"chainmail"]
+	RunState.enter_camp(DwarfContent.get_class_resource())
+	RunState.equip_item(RunState.owned_equipment[0])
+	RunState.equip_item(RunState.owned_equipment[1])
+	assert_eq(MetaState.equipped_weapon_id, &"rusty_shortsword")
+	assert_eq(MetaState.equipped_armor_id, &"chainmail")
+	RunState.unequip_slot(EquipmentResource.Slot.ARMOR)
+	assert_eq(MetaState.equipped_armor_id, &"")
+	MetaState.reset()
+	assert_true(SaveManager.load_meta())
+	assert_eq(MetaState.owned_equipment_ids, [&"rusty_shortsword", &"chainmail"] as Array[StringName])
+	assert_eq(MetaState.equipped_weapon_id, &"rusty_shortsword")
+	assert_eq(MetaState.equipped_armor_id, &"")
+
+func test_event_xp_writes_through():
+	RunState.start_new_run(DwarfContent.get_class_resource())
+	var choice := EventChoice.new()
+	choice.xp_delta = 5
+	RunState.apply_event_choice(choice)
+	assert_eq(MetaState.xp, 5)

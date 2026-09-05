@@ -140,6 +140,7 @@ func build_encounter_for_node(node: MapNode) -> CombatEncounter:
 
 func grant_equipment(item: EquipmentResource) -> void:
 	owned_equipment.append(item)
+	_commit_equipment_if_at_camp()
 
 func equip_item(item: EquipmentResource) -> void:
 	match item.slot:
@@ -149,6 +150,7 @@ func equip_item(item: EquipmentResource) -> void:
 			equipped_armor = item
 		EquipmentResource.Slot.TRINKET:
 			equipped_trinket = item
+	_commit_equipment_if_at_camp()
 
 func unequip_slot(slot: EquipmentResource.Slot) -> void:
 	match slot:
@@ -158,6 +160,7 @@ func unequip_slot(slot: EquipmentResource.Slot) -> void:
 			equipped_armor = null
 		EquipmentResource.Slot.TRINKET:
 			equipped_trinket = null
+	_commit_equipment_if_at_camp()
 
 func grant_relic(relic: RelicResource) -> void:
 	unlocked_relics.append(relic.id)
@@ -194,6 +197,27 @@ func buy_potion(potion: PotionResource, price: int) -> bool:
 	gold -= price
 	return true
 
+func _commit_never_lost() -> void:
+	MetaState.level = level
+	MetaState.xp = xp
+	MetaState.skill_points = skill_points
+	MetaState.unlocked_skill_nodes = unlocked_skill_nodes.duplicate()
+
+func _commit_equipment() -> void:
+	var ids: Array[StringName] = []
+	for item in owned_equipment:
+		ids.append(item.id)
+	MetaState.owned_equipment_ids = ids
+	MetaState.equipped_weapon_id = equipped_weapon.id if equipped_weapon != null else &""
+	MetaState.equipped_armor_id = equipped_armor.id if equipped_armor != null else &""
+	MetaState.equipped_trinket_id = equipped_trinket.id if equipped_trinket != null else &""
+
+func _commit_equipment_if_at_camp() -> void:
+	if in_run:
+		return
+	_commit_equipment()
+	SaveManager.save_meta()
+
 func _apply_passive(passive_id: StringName, player: CombatActor) -> void:
 	match passive_id:
 		&"bonus_strength_stack":
@@ -216,6 +240,8 @@ func grant_xp(amount: int) -> void:
 		skill_points += 1
 	if level >= MAX_LEVEL:
 		xp = 0
+	_commit_never_lost()
+	SaveManager.save_meta()
 
 func unlock_skill_node(node: SkillNode) -> bool:
 	if skill_points <= 0:
@@ -231,6 +257,8 @@ func unlock_skill_node(node: SkillNode) -> bool:
 	var hp_gain: int = node.vitality_delta * 2
 	player_max_hp += hp_gain
 	player_current_hp += hp_gain
+	_commit_never_lost()
+	SaveManager.save_meta()
 	return true
 
 func upgrade_card(card_id: StringName) -> void:
