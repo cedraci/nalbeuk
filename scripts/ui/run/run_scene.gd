@@ -16,22 +16,24 @@ func _ready() -> void:
 	map_view = MapView.new()
 	map_view.set_anchors_preset(Control.PRESET_FULL_RECT)
 	map_view.node_selected.connect(_on_map_node_selected)
+	add_child(map_view)
 	RunState.start_new_run(DwarfContent.get_class_resource())
 	_show_map()
 
 func _swap_to(node: Control) -> void:
-	if _current_child != null and _current_child.get_parent() == self:
+	if _current_child != null and _current_child != map_view and _current_child.get_parent() == self:
+		# queue_free(), not free(): this can run from inside the
+		# outgoing scene's own signal-dispatch call stack (e.g. a
+		# button's "pressed" handler chain), so freeing immediately
+		# would destroy a node still executing its own dispatch —
+		# the same bug class HandView and CombatDemo were fixed for
+		# in Plan 2A.
 		remove_child(_current_child)
-		if _current_child != map_view:
-			# queue_free(), not free(): this can run from inside the
-			# outgoing scene's own signal-dispatch call stack (e.g. a
-			# button's "pressed" handler chain), so freeing immediately
-			# would destroy a node still executing its own dispatch —
-			# the same bug class HandView and CombatDemo were fixed for
-			# in Plan 2A.
-			_current_child.queue_free()
+		_current_child.queue_free()
+	map_view.visible = (node == map_view)
 	_current_child = node
-	add_child(node)
+	if node != map_view:
+		add_child(node)
 
 func _show_map() -> void:
 	map_view.display(RunState.map, RunState.current_node)
@@ -66,6 +68,7 @@ func _on_combat_dismissed(player_won: bool, node: MapNode) -> void:
 		else:
 			_show_map()
 	else:
+		RunState.current_floor = node.floor
 		_show_game_over()
 
 func _gold_reward_for(node_type: MapNode.NodeType) -> int:

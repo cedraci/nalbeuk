@@ -8,7 +8,6 @@ func test_ready_starts_a_run_and_shows_the_map():
 func test_selecting_a_combat_node_shows_combat_scene():
 	var scene := RunScene.new()
 	add_child_autofree(scene)
-	autofree(scene.map_view)
 	var combat_node := MapNode.new(9999, MapNode.NodeType.COMBAT, 0)
 	scene.map_view.node_selected.emit(combat_node)
 	assert_eq(scene.combat_scene.get_parent(), scene)
@@ -16,7 +15,6 @@ func test_selecting_a_combat_node_shows_combat_scene():
 func test_selecting_an_elite_node_builds_the_elite_encounter():
 	var scene := RunScene.new()
 	add_child_autofree(scene)
-	autofree(scene.map_view)
 	var elite_node := MapNode.new(9999, MapNode.NodeType.ELITE, 0)
 	scene.map_view.node_selected.emit(elite_node)
 	assert_eq(scene.combat_scene.encounter.enemy.display_name, "Alpha Cave Rat")
@@ -24,7 +22,6 @@ func test_selecting_an_elite_node_builds_the_elite_encounter():
 func test_selecting_an_event_node_shows_event_scene():
 	var scene := RunScene.new()
 	add_child_autofree(scene)
-	autofree(scene.map_view)
 	var event_node := MapNode.new(9999, MapNode.NodeType.EVENT, 0)
 	scene.map_view.node_selected.emit(event_node)
 	assert_eq(scene.event_scene.get_parent(), scene)
@@ -32,7 +29,6 @@ func test_selecting_an_event_node_shows_event_scene():
 func test_selecting_a_rest_node_shows_rest_scene():
 	var scene := RunScene.new()
 	add_child_autofree(scene)
-	autofree(scene.map_view)
 	var rest_node := MapNode.new(9999, MapNode.NodeType.REST, 0)
 	scene.map_view.node_selected.emit(rest_node)
 	assert_eq(scene.rest_scene.get_parent(), scene)
@@ -40,7 +36,6 @@ func test_selecting_a_rest_node_shows_rest_scene():
 func test_selecting_a_shop_node_shows_shop_scene():
 	var scene := RunScene.new()
 	add_child_autofree(scene)
-	autofree(scene.map_view)
 	var shop_node := MapNode.new(9999, MapNode.NodeType.SHOP, 0)
 	scene.map_view.node_selected.emit(shop_node)
 	assert_eq(scene.shop_scene.get_parent(), scene)
@@ -70,16 +65,22 @@ func test_winning_a_combat_node_grants_gold_and_returns_to_map():
 func test_losing_a_combat_node_shows_game_over():
 	var scene := RunScene.new()
 	add_child_autofree(scene)
-	autofree(scene.map_view)
 	var combat_node := MapNode.new(9999, MapNode.NodeType.COMBAT, 0)
 	scene.map_view.node_selected.emit(combat_node)
 	scene.combat_scene.combat_dismissed.emit(false)
 	assert_eq(scene.game_over_scene.get_parent(), scene)
 
+func test_losing_a_combat_node_reports_the_floor_it_was_lost_on():
+	var scene := RunScene.new()
+	add_child_autofree(scene)
+	var combat_node := MapNode.new(9999, MapNode.NodeType.COMBAT, 2)
+	scene.map_view.node_selected.emit(combat_node)
+	scene.combat_scene.combat_dismissed.emit(false)
+	assert_eq(RunState.current_floor, 2)
+
 func test_winning_the_boss_node_shows_victory():
 	var scene := RunScene.new()
 	add_child_autofree(scene)
-	autofree(scene.map_view)
 	var boss_node := MapNode.new(9999, MapNode.NodeType.BOSS, 0)
 	scene.map_view.node_selected.emit(boss_node)
 	scene.combat_scene.combat_dismissed.emit(true)

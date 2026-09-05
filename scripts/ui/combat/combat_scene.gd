@@ -56,7 +56,7 @@ func _ready() -> void:
 	result_label = Label.new()
 	result_container.add_child(result_label)
 	play_again_button = Button.new()
-	play_again_button.text = "Play Again"
+	play_again_button.text = "Continue"
 	play_again_button.pressed.connect(_on_play_again_pressed)
 	result_container.add_child(play_again_button)
 
