@@ -13,6 +13,7 @@ const XP_THRESHOLDS: Array[int] = [20, 30, 40, 55, 70, 90]
 const COMBAT_XP_REWARD := 15
 const ELITE_XP_REWARD := 30
 const BOSS_XP_REWARD := 50
+const MAX_POTIONS := 2
 
 var class_resource: ClassResource
 var persistent_stats: PersistentStats
@@ -38,6 +39,7 @@ var unlocked_relics: Array[StringName] = []
 var relic_bonus_strength: int = 0
 var relic_bonus_block: int = 0
 var relic_gold_bonus: int = 0
+var potions: Array[PotionResource] = []
 
 func start_new_run(p_class_resource: ClassResource) -> void:
 	class_resource = p_class_resource
@@ -60,6 +62,7 @@ func start_new_run(p_class_resource: ClassResource) -> void:
 	relic_bonus_strength = 0
 	relic_bonus_block = 0
 	relic_gold_bonus = 0
+	potions = []
 	rng = RandomNumberGenerator.new()
 	rng.randomize()
 	map = MapGraph.generate(rng)
@@ -116,6 +119,17 @@ func grant_relic(relic: RelicResource) -> void:
 	var hp_gain: int = relic.vitality_delta * 2
 	player_max_hp += hp_gain
 	player_current_hp += hp_gain
+
+func add_potion(potion: PotionResource) -> bool:
+	if potions.size() >= MAX_POTIONS:
+		return false
+	potions.append(potion)
+	return true
+
+func consume_potion(index: int) -> PotionResource:
+	var potion: PotionResource = potions[index]
+	potions.remove_at(index)
+	return potion
 
 func _apply_passive(passive_id: StringName, player: CombatActor) -> void:
 	match passive_id:
@@ -180,7 +194,7 @@ func buy_card(card_template: CardResource, price: int) -> bool:
 	return true
 
 func apply_combat_reward(gold_reward: int, player_hp_after: int) -> void:
-	gold += gold_reward
+	gold += gold_reward + relic_gold_bonus
 	player_current_hp = min(player_hp_after, player_max_hp) as int
 
 func mark_node_visited_and_advance(node: MapNode) -> void:

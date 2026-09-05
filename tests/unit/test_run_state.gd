@@ -348,3 +348,43 @@ func test_granting_the_same_relic_twice_stacks():
 	RunState.grant_relic(relic)
 	assert_eq(RunState.relic_bonus_strength, 4)
 	assert_eq(RunState.unlocked_relics.count(&"test_relic"), 2)
+
+func test_start_new_run_resets_potions():
+	RunState.potions = [DwarfPotions.get_all_potions()[0]]
+	RunState.start_new_run(DwarfContent.get_class_resource())
+	assert_eq(RunState.potions.size(), 0)
+
+func test_add_potion_appends_up_to_the_cap():
+	RunState.start_new_run(DwarfContent.get_class_resource())
+	var potions := DwarfPotions.get_all_potions()
+	var added_first := RunState.add_potion(potions[0])
+	var added_second := RunState.add_potion(potions[1])
+	assert_true(added_first)
+	assert_true(added_second)
+	assert_eq(RunState.potions.size(), 2)
+
+func test_add_potion_rejects_past_the_cap():
+	RunState.start_new_run(DwarfContent.get_class_resource())
+	var potions := DwarfPotions.get_all_potions()
+	RunState.add_potion(potions[0])
+	RunState.add_potion(potions[1])
+	var added_third := RunState.add_potion(potions[0])
+	assert_false(added_third)
+	assert_eq(RunState.potions.size(), 2)
+
+func test_consume_potion_removes_and_returns_it():
+	RunState.start_new_run(DwarfContent.get_class_resource())
+	var potions := DwarfPotions.get_all_potions()
+	RunState.add_potion(potions[0])
+	RunState.add_potion(potions[1])
+	var consumed := RunState.consume_potion(0)
+	assert_eq(consumed.id, potions[0].id)
+	assert_eq(RunState.potions.size(), 1)
+	assert_eq(RunState.potions[0].id, potions[1].id)
+
+func test_apply_combat_reward_adds_relic_gold_bonus():
+	RunState.start_new_run(DwarfContent.get_class_resource())
+	RunState.relic_gold_bonus = 5
+	RunState.gold = 0
+	RunState.apply_combat_reward(10, RunState.player_current_hp)
+	assert_eq(RunState.gold, 15)
