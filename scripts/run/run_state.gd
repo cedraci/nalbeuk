@@ -85,9 +85,9 @@ func build_encounter_for_node(node: MapNode) -> CombatEncounter:
 	player.baseline_strike_bonus += level_bonus_strength + relic_bonus_strength + equip_strength
 	player.baseline_block_bonus += level_bonus_block + relic_bonus_block + equip_block
 	for node_id in unlocked_skill_nodes:
-		for skill_node in DwarfSkillTree.get_skill_tree():
-			if skill_node.id == node_id:
-				_apply_passive(skill_node.passive_id, player)
+		var skill_node := DwarfSkillTree.get_node_by_id(node_id)
+		if skill_node != null:
+			_apply_passive(skill_node.passive_id, player)
 	var enemy_res: EnemyResource
 	match node.node_type:
 		MapNode.NodeType.ELITE:

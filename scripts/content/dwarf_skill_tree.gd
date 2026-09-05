@@ -40,3 +40,9 @@ static func get_skill_tree() -> Array[SkillNode]:
 		),
 	]
 	return nodes
+
+static func get_node_by_id(node_id: StringName) -> SkillNode:
+	for node in get_skill_tree():
+		if node.id == node_id:
+			return node
+	return null

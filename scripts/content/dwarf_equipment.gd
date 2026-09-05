@@ -49,3 +49,9 @@ static func get_all_equipment() -> Array[EquipmentResource]:
 static func get_random_equipment(rng: RandomNumberGenerator) -> EquipmentResource:
 	var items := get_all_equipment()
 	return items[rng.randi_range(0, items.size() - 1)]
+
+static func get_by_id(item_id: StringName) -> EquipmentResource:
+	for item in get_all_equipment():
+		if item.id == item_id:
+			return item
+	return null

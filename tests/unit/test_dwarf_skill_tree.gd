@@ -41,3 +41,11 @@ func test_get_skill_tree_root_grants_strength_and_vitality():
 	assert_eq(root.id, &"dwarven_grit")
 	assert_eq(root.strength_delta, 1)
 	assert_eq(root.vitality_delta, 1)
+
+func test_get_node_by_id_returns_the_matching_node():
+	var node := DwarfSkillTree.get_node_by_id(&"thick_hide")
+	assert_not_null(node)
+	assert_eq(node.vitality_delta, 3)
+
+func test_get_node_by_id_returns_null_for_unknown_id():
+	assert_null(DwarfSkillTree.get_node_by_id(&"no_such_node"))

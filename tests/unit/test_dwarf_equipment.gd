@@ -33,3 +33,14 @@ func test_get_random_equipment_returns_one_of_the_known_items():
 		all_ids.append(item.id)
 	var picked := DwarfEquipment.get_random_equipment(rng)
 	assert_true(all_ids.has(picked.id))
+
+func test_get_by_id_returns_a_fresh_instance_of_the_known_item():
+	var first := DwarfEquipment.get_by_id(&"chainmail")
+	var second := DwarfEquipment.get_by_id(&"chainmail")
+	assert_not_null(first)
+	assert_eq(first.display_name, "Chainmail")
+	assert_eq(first.slot, EquipmentResource.Slot.ARMOR)
+	assert_ne(first, second, "Each call returns its own instance so two owned copies are distinct.")
+
+func test_get_by_id_returns_null_for_unknown_id():
+	assert_null(DwarfEquipment.get_by_id(&"no_such_item"))
