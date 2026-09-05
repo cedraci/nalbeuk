@@ -19,3 +19,12 @@ func test_get_random_event_returns_one_of_the_known_events():
 		all_ids.append(event.id)
 	var picked := EventsContent.get_random_event(rng)
 	assert_true(all_ids.has(picked.id))
+
+func test_at_least_one_choice_grants_xp():
+	var events := EventsContent.get_all_events()
+	var found_xp_choice := false
+	for event in events:
+		for choice in event.choices:
+			if choice.xp_delta > 0:
+				found_xp_choice = true
+	assert_true(found_xp_choice)

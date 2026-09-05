@@ -172,3 +172,18 @@ func test_unlock_skill_node_fails_when_already_unlocked():
 	assert_false(unlocked_again)
 	assert_eq(RunState.skill_points, 1)
 	assert_eq(RunState.level_bonus_strength, 2, "Buying the same node twice must not double-apply its bonus.")
+
+func test_apply_event_choice_grants_xp():
+	RunState.start_new_run(DwarfContent.get_class_resource())
+	var choice := EventChoice.new()
+	choice.xp_delta = 5
+	RunState.apply_event_choice(choice)
+	assert_eq(RunState.xp, 5)
+
+func test_apply_event_choice_xp_can_trigger_a_level_up():
+	RunState.start_new_run(DwarfContent.get_class_resource())
+	var choice := EventChoice.new()
+	choice.xp_delta = RunState.XP_THRESHOLDS[0]
+	RunState.apply_event_choice(choice)
+	assert_eq(RunState.level, 2)
+	assert_eq(RunState.skill_points, 1)

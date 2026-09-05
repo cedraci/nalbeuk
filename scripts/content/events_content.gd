@@ -21,6 +21,7 @@ static func _make_toll_troll_event() -> EventResource:
 	refuse.label = "Refuse and push through"
 	refuse.gold_delta = 0
 	refuse.hp_delta = -5
+	refuse.xp_delta = 15
 	refuse.outcome_text = "The troll wasn't bluffing about the shoving."
 	var choices: Array[EventChoice] = [pay, refuse]
 	event.choices = choices
@@ -34,6 +35,7 @@ static func _make_unattended_cart_event() -> EventResource:
 	take.label = "Take what you can"
 	take.gold_delta = 8
 	take.hp_delta = 0
+	take.xp_delta = 5
 	take.outcome_text = "Some coins were tucked under a tarp."
 	var leave := EventChoice.new()
 	leave.label = "Leave it be"

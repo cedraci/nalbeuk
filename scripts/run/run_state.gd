@@ -106,6 +106,7 @@ func apply_event_choice(choice: EventChoice) -> void:
 	var new_hp: int = player_current_hp + choice.hp_delta
 	new_hp = max(new_hp, 0) as int
 	player_current_hp = min(new_hp, player_max_hp) as int
+	grant_xp(choice.xp_delta)
 
 func buy_card(card_template: CardResource, price: int) -> bool:
 	if gold < price:
