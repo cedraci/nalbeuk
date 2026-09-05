@@ -72,3 +72,57 @@ static func _connect_floors(from_floor: Array[MapNode], to_floor: Array[MapNode]
 			var from_node: MapNode = from_floor[rng.randi_range(0, from_floor.size() - 1)]
 			from_node.connections.append(to_node.id)
 			incoming_counts[to_node.id] += 1
+
+func to_dict() -> Dictionary:
+	var floors_data: Array = []
+	for floor_nodes in floors:
+		var nodes_data: Array = []
+		for node in floor_nodes:
+			var connections: Array = []
+			for connection_id in node.connections:
+				connections.append(connection_id)
+			nodes_data.append({
+				"id": node.id,
+				"type": int(node.node_type),
+				"floor": node.floor,
+				"connections": connections,
+				"visited": node.visited,
+			})
+		floors_data.append(nodes_data)
+	return {"floors": floors_data}
+
+static func from_dict(data: Dictionary) -> MapGraph:
+	var raw_floors: Variant = data.get("floors", null)
+	if not (raw_floors is Array):
+		return null
+	var floors_array: Array = raw_floors
+	if floors_array.is_empty():
+		return null
+	var graph := MapGraph.new()
+	for raw_floor in floors_array:
+		if not (raw_floor is Array):
+			return null
+		var floor_nodes: Array[MapNode] = []
+		for raw_node in raw_floor:
+			if not (raw_node is Dictionary):
+				return null
+			var node_data: Dictionary = raw_node
+			if not (node_data.has("id") and node_data.has("type") and node_data.has("floor")):
+				return null
+			var node_type: MapNode.NodeType = int(node_data["type"]) as MapNode.NodeType
+			var node := MapNode.new(int(node_data["id"]), node_type, int(node_data["floor"]))
+			var raw_connections: Variant = node_data.get("connections", [])
+			if raw_connections is Array:
+				for connection_id in raw_connections:
+					node.connections.append(int(connection_id))
+			node.visited = bool(node_data.get("visited", false))
+			floor_nodes.append(node)
+		graph.floors.append(floor_nodes)
+	return graph
+
+func find_node(node_id: int) -> MapNode:
+	for floor_nodes in floors:
+		for node in floor_nodes:
+			if node.id == node_id:
+				return node
+	return null

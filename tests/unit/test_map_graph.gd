@@ -72,3 +72,42 @@ func test_treasure_nodes_are_reachable_across_enough_seeds():
 				if node.node_type == MapNode.NodeType.TREASURE:
 					found_treasure = true
 	assert_true(found_treasure, "TREASURE should appear in at least one of 20 generated maps.")
+
+func _signature(graph: MapGraph) -> Array:
+	var out: Array = []
+	for floor_nodes in graph.floors:
+		for node in floor_nodes:
+			out.append("%d:%d:%d:%s:%s" % [node.id, node.node_type, node.floor, str(node.connections), str(node.visited)])
+	return out
+
+func test_to_dict_from_dict_round_trips_a_generated_graph():
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 7
+	var graph := MapGraph.generate(rng)
+	graph.floors[1][0].visited = true
+	var rebuilt := MapGraph.from_dict(graph.to_dict())
+	assert_not_null(rebuilt)
+	assert_eq(rebuilt.floors.size(), graph.floors.size())
+	assert_eq(_signature(rebuilt), _signature(graph))
+
+func test_to_dict_survives_json():
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 7
+	var graph := MapGraph.generate(rng)
+	var parsed: Variant = JSON.parse_string(JSON.stringify(graph.to_dict()))
+	var rebuilt := MapGraph.from_dict(parsed)
+	assert_eq(_signature(rebuilt), _signature(graph))
+
+func test_find_node_returns_the_node_or_null():
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 7
+	var graph := MapGraph.generate(rng)
+	var target: MapNode = graph.floors[2][0]
+	assert_eq(graph.find_node(target.id), target)
+	assert_null(graph.find_node(9999))
+
+func test_from_dict_returns_null_for_malformed_data():
+	assert_null(MapGraph.from_dict({}))
+	assert_null(MapGraph.from_dict({"floors": []}))
+	assert_null(MapGraph.from_dict({"floors": [[{"type": 0, "floor": 0}]]}), "A node without an id is malformed.")
+	assert_null(MapGraph.from_dict({"floors": ["not a floor"]}))
