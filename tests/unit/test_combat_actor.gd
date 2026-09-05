@@ -41,3 +41,7 @@ func test_died_signal_emitted_when_hp_reaches_zero():
 	watch_signals(actor)
 	actor.take_damage(5)
 	assert_signal_emitted(actor, "died")
+
+func test_baseline_block_bonus_defaults_to_zero():
+	var actor := CombatActor.new("Hero", 20)
+	assert_eq(actor.baseline_block_bonus, 0)

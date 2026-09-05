@@ -8,6 +8,7 @@ var max_hp: int
 var current_hp: int
 var block: int = 0
 var baseline_strike_bonus: int = 0
+var baseline_block_bonus: int = 0
 var status_stacks: Dictionary = {}
 
 func _init(p_display_name: String, p_max_hp: int, p_baseline_strike_bonus: int = 0) -> void:
