@@ -109,6 +109,11 @@ static func from_dict(data: Dictionary) -> MapGraph:
 			var node_data: Dictionary = raw_node
 			if not (node_data.has("id") and node_data.has("type") and node_data.has("floor")):
 				return null
+			var raw_id: Variant = node_data["id"]
+			var raw_type: Variant = node_data["type"]
+			var raw_floor_value: Variant = node_data["floor"]
+			if not (_is_number(raw_id) and _is_number(raw_type) and _is_number(raw_floor_value)):
+				return null
 			var node_type: MapNode.NodeType = int(node_data["type"]) as MapNode.NodeType
 			var node := MapNode.new(int(node_data["id"]), node_type, int(node_data["floor"]))
 			var raw_connections: Variant = node_data.get("connections", [])
@@ -119,6 +124,9 @@ static func from_dict(data: Dictionary) -> MapGraph:
 			floor_nodes.append(node)
 		graph.floors.append(floor_nodes)
 	return graph
+
+static func _is_number(value: Variant) -> bool:
+	return value is int or value is float
 
 func find_node(node_id: int) -> MapNode:
 	for floor_nodes in floors:

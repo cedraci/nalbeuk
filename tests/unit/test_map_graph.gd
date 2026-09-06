@@ -111,3 +111,9 @@ func test_from_dict_returns_null_for_malformed_data():
 	assert_null(MapGraph.from_dict({"floors": []}))
 	assert_null(MapGraph.from_dict({"floors": [[{"type": 0, "floor": 0}]]}), "A node without an id is malformed.")
 	assert_null(MapGraph.from_dict({"floors": ["not a floor"]}))
+
+func test_from_dict_returns_null_when_id_type_or_floor_is_not_a_number():
+	assert_null(MapGraph.from_dict({"floors": [[{"id": {}, "type": 0, "floor": 0}]]}))
+	assert_null(MapGraph.from_dict({"floors": [[{"id": 0, "type": "combat", "floor": 0}]]}))
+	assert_null(MapGraph.from_dict({"floors": [[{"id": 0, "type": 0, "floor": [0]}]]}))
+	assert_not_null(MapGraph.from_dict({"floors": [[{"id": 0.0, "type": 0.0, "floor": 0.0}]]}), "JSON floats are numbers and must still be accepted.")
