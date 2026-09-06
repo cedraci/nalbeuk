@@ -1,6 +1,7 @@
 extends Control
 class_name RunScene
 
+var background: ColorRect
 var map_view: MapView
 var combat_scene: CombatScene
 var rest_scene: RestScene
@@ -17,6 +18,11 @@ var _current_child: Control
 func _ready() -> void:
 	set_anchors_preset(Control.PRESET_FULL_RECT)
 	theme = ThemeBuilder.build()
+	background = ColorRect.new()
+	background.color = UiTokens.BG
+	background.set_anchors_preset(Control.PRESET_FULL_RECT)
+	background.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(background)
 	map_view = MapView.new()
 	map_view.set_anchors_preset(Control.PRESET_FULL_RECT)
 	map_view.node_selected.connect(_on_map_node_selected)

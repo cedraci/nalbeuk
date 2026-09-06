@@ -380,3 +380,12 @@ func test_run_scene_applies_the_torchlit_theme_to_its_tree():
 	add_child_autofree(scene)
 	assert_eq(scene.theme, ThemeBuilder.build())
 	assert_eq(scene.camp_scene.get_theme_font_size(&"font_size", &"Display"), UiTokens.FONT_H1, "Children resolve the inherited theme's variations.")
+
+func test_run_scene_paints_the_torchlit_background():
+	var scene := RunScene.new()
+	add_child_autofree(scene)
+	assert_true(scene.background is ColorRect)
+	assert_eq(scene.background.color, UiTokens.BG)
+	assert_eq(scene.get_child(0), scene.background)
+	scene.camp_scene.start_run_button.pressed.emit()
+	assert_eq(scene.background.get_parent(), scene)
