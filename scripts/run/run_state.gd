@@ -78,6 +78,15 @@ func resume_run(p_class_resource: ClassResource) -> bool:
 	_reset_run_only_state()
 	if not RunSnapshot.restore(SaveManager.run_snapshot):
 		push_warning("RunState.resume_run: snapshot could not be restored")
+		# Belt and braces. restore() writes nothing when it fails, but the
+		# caller lands back at Camp either way, and Camp's Inventory commits
+		# whatever gear is live to MetaState: re-seed a clean Camp state.
+		load_character_from_meta()
+		_reset_run_only_state()
+		map = null
+		current_node = null
+		current_floor = 0
+		in_run = false
 		return false
 	in_run = true
 	return true

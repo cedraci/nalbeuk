@@ -708,6 +708,31 @@ func test_resume_run_returns_false_for_a_broken_snapshot():
 	assert_false(RunState.in_run)
 	assert_null(RunState.map)
 
+func test_resume_run_leaves_a_clean_camp_when_the_snapshot_scalars_are_broken():
+	RunState.start_new_run(DwarfContent.get_class_resource())
+	RunState.grant_equipment(DwarfEquipment.get_by_id(&"chainmail"))
+	RunState.mark_node_visited_and_advance(RunState.map.floors[1][0])
+	SaveManager.run_snapshot["player_max_hp"] = []
+	RunState.enter_camp(DwarfContent.get_class_resource())
+	assert_false(RunState.resume_run(DwarfContent.get_class_resource()))
+	assert_false(RunState.in_run)
+	assert_null(RunState.map)
+	assert_null(RunState.current_node)
+	assert_eq(RunState.current_floor, 0)
+	assert_true(RunState.owned_equipment.is_empty(), "The run's gear never becomes live at Camp after a failed resume.")
+
+func test_resume_run_applies_vitality_from_a_skill_unlocked_after_the_checkpoint():
+	MetaState.unlocked_skill_nodes = [&"dwarven_grit"]
+	RunState.start_new_run(DwarfContent.get_class_resource())
+	var max_hp_at_checkpoint: int = RunState.player_max_hp
+	RunState.mark_node_visited_and_advance(RunState.map.floors[1][0])
+	RunState.skill_points = 1
+	assert_true(RunState.unlock_skill_node(DwarfSkillTree.get_node_by_id(&"thick_hide")))
+	assert_eq(RunState.player_max_hp, max_hp_at_checkpoint + 6, "thick_hide is +3 vitality.")
+	RunState.enter_camp(DwarfContent.get_class_resource())
+	assert_true(RunState.resume_run(DwarfContent.get_class_resource()))
+	assert_eq(RunState.player_max_hp, max_hp_at_checkpoint + 6, "A skill unlocked after the checkpoint keeps its vitality HP on resume.")
+
 func test_abandon_saved_run_applies_the_death_rules_to_the_suspended_run():
 	MetaState.owned_equipment_ids = [&"leather_vest"]
 	RunState.start_new_run(DwarfContent.get_class_resource())

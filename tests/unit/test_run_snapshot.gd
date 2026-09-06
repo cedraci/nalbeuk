@@ -33,7 +33,9 @@ func test_capture_then_restore_reproduces_the_run():
 	var saved_node := _start_and_mutate_a_run()
 	var expected_map := _map_signature(RunState.map)
 	var expected_deck := _deck_ids()
-	var expected_max_hp: int = RunState.player_max_hp
+	# base_hp 30 + 2 * dwarven_grit VIT 1 + 2 * iron_ration VIT 3.
+	var expected_max_hp: int = DwarfContent.get_class_resource().base_hp + 2 * 1 + 2 * 3
+	assert_eq(RunState.player_max_hp, expected_max_hp, "The live run's max HP is the meta baseline plus relic vitality.")
 	var data := RunSnapshot.capture()
 	var expected_next_random: int = RunState.rng.randi()
 	RunState.enter_camp(DwarfContent.get_class_resource())
@@ -43,7 +45,7 @@ func test_capture_then_restore_reproduces_the_run():
 	assert_eq(RunState.current_node.id, saved_node.id)
 	assert_eq(RunState.current_floor, 1)
 	assert_eq(_deck_ids(), expected_deck)
-	assert_eq(RunState.player_max_hp, expected_max_hp, "Relic vitality is already baked into the saved max HP.")
+	assert_eq(RunState.player_max_hp, expected_max_hp, "Max HP on restore is the meta-derived baseline plus relic vitality.")
 	assert_eq(RunState.player_current_hp, 9)
 	assert_eq(RunState.gold, 25)
 	assert_eq(RunState.unlocked_relics, [&"iron_ration", &"whetstone"] as Array[StringName])
@@ -103,6 +105,60 @@ func test_restore_skips_unknown_ids_and_falls_back_to_the_starting_deck():
 	assert_eq(RunState.potions.size(), RunState.MAX_POTIONS, "Potions are capped at MAX_POTIONS.")
 	assert_eq(RunState.owned_equipment.size(), 0)
 	assert_null(RunState.equipped_weapon)
+
+func test_restore_rejects_a_non_numeric_scalar_without_writing_anything():
+	_start_and_mutate_a_run()
+	var data := RunSnapshot.capture()
+	data["gold"] = null
+	RunState.enter_camp(DwarfContent.get_class_resource())
+	assert_false(RunSnapshot.restore(data), "A null gold is a broken snapshot.")
+	assert_null(RunState.map, "Nothing is written when a scalar fails validation.")
+	assert_null(RunState.current_node)
+	assert_true(RunState.owned_equipment.is_empty(), "The run's gear is not made live at Camp.")
+
+func test_restore_validates_every_scalar_before_writing():
+	_start_and_mutate_a_run()
+	var good := RunSnapshot.capture()
+	for key in ["current_floor", "player_max_hp", "player_current_hp", "gold"]:
+		for bad_value in [null, {}, [], "nope"]:
+			var data: Dictionary = good.duplicate(true)
+			data[key] = bad_value
+			RunState.enter_camp(DwarfContent.get_class_resource())
+			assert_false(RunSnapshot.restore(data), "%s = %s is rejected" % [key, str(bad_value)])
+			assert_null(RunState.map, "%s = %s wrote nothing" % [key, str(bad_value)])
+	for key in ["rng_seed", "rng_state"]:
+		for bad_value in [null, {}, []]:
+			var data: Dictionary = good.duplicate(true)
+			data[key] = bad_value
+			RunState.enter_camp(DwarfContent.get_class_resource())
+			assert_false(RunSnapshot.restore(data), "%s = %s is rejected" % [key, str(bad_value)])
+			assert_null(RunState.map, "%s = %s wrote nothing" % [key, str(bad_value)])
+
+func test_restore_accepts_numeric_rng_fields():
+	_start_and_mutate_a_run()
+	var data := RunSnapshot.capture()
+	data["rng_seed"] = 12
+	data["rng_state"] = 34
+	RunState.enter_camp(DwarfContent.get_class_resource())
+	assert_true(RunSnapshot.restore(data), "Numbers are accepted for the rng fields as well as strings.")
+	assert_eq(RunState.rng.seed, 12)
+
+func test_restore_derives_max_hp_from_meta_plus_relic_vitality():
+	MetaState.unlocked_skill_nodes = [&"dwarven_grit"]
+	RunState.start_new_run(DwarfContent.get_class_resource())
+	RunState.grant_relic(DwarfRelics.get_by_id(&"iron_ration"))
+	var data := RunSnapshot.capture()
+	# The player unlocks a +3 vitality skill after this checkpoint, so the
+	# snapshot's own player_max_hp is 6 short of the truth.
+	data["player_max_hp"] = 1
+	data["player_current_hp"] = 500
+	MetaState.unlocked_skill_nodes = [&"dwarven_grit", &"thick_hide"]
+	RunState.enter_camp(DwarfContent.get_class_resource())
+	assert_true(RunSnapshot.restore(data))
+	# base_hp 30 + 2 * (grit 1 + thick_hide 3) + 2 * iron_ration 3.
+	var expected: int = DwarfContent.get_class_resource().base_hp + 2 * 4 + 2 * 3
+	assert_eq(RunState.player_max_hp, expected, "Max HP is derived, not read back from the snapshot.")
+	assert_eq(RunState.player_current_hp, expected, "Current HP is clamped to the derived max.")
 
 func test_run_outcome_abandoned_defaults_to_false():
 	var outcome := RunOutcome.new()

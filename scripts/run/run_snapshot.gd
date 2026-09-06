@@ -27,6 +27,8 @@ static func capture() -> Dictionary:
 		"current_node_id": RunState.current_node.id,
 		"map": RunState.map.to_dict(),
 		"deck": deck_ids,
+		# Diagnostic only: restore() derives max HP from MetaState plus the
+		# restored relics rather than reading this back.
 		"player_max_hp": RunState.player_max_hp,
 		"player_current_hp": RunState.player_current_hp,
 		"gold": RunState.gold,
@@ -42,15 +44,33 @@ static func capture() -> Dictionary:
 	}
 
 static func restore(data: Dictionary) -> bool:
-	# Structural checks first: nothing is written unless the map and the
-	# current node resolve.
+	# Structural checks first: nothing at all is written unless the map, the
+	# current node, and every scalar are valid. int(null) / int({}) abort the
+	# function in GDScript, so a scalar checked halfway through would leave a
+	# half-restored RunState — with the run's gear live at Camp, where the
+	# Inventory would commit it to MetaState.
 	var raw_map: Variant = data.get("map", null)
 	if not (raw_map is Dictionary):
 		return false
 	var graph := MapGraph.from_dict(raw_map)
 	if graph == null:
 		return false
-	var node := graph.find_node(int(data.get("current_node_id", -1)))
+	var raw_node_id: Variant = data.get("current_node_id", -1)
+	if not _is_number(raw_node_id):
+		push_warning("RunSnapshot: current_node_id is not a number; snapshot rejected")
+		return false
+	for key in ["current_floor", "player_max_hp", "player_current_hp", "gold"]:
+		if not _is_number(data.get(key, 0)):
+			push_warning("RunSnapshot: %s is not a number; snapshot rejected" % key)
+			return false
+	# Written as strings (64-bit ints do not survive JSON), but a number
+	# round-trips through str() just as well.
+	for key in ["rng_seed", "rng_state"]:
+		var raw_rng: Variant = data.get(key, "0")
+		if not (raw_rng is String or raw_rng is StringName or _is_number(raw_rng)):
+			push_warning("RunSnapshot: %s is neither a string nor a number; snapshot rejected" % key)
+			return false
+	var node := graph.find_node(int(raw_node_id))
 	if node == null:
 		return false
 
@@ -86,6 +106,7 @@ static func restore(data: Dictionary) -> bool:
 	var relic_strength: int = 0
 	var relic_block: int = 0
 	var relic_gold: int = 0
+	var relic_vitality: int = 0
 	for raw in _array(data, "relic_ids"):
 		var relic := DwarfRelics.get_by_id(StringName(str(raw)))
 		if relic == null:
@@ -95,7 +116,7 @@ static func restore(data: Dictionary) -> bool:
 		relic_strength += relic.strength_delta
 		relic_block += relic.block_delta
 		relic_gold += relic.gold_bonus_per_reward
-	# Relic vitality is not re-applied: it is already baked into the saved max HP.
+		relic_vitality += relic.vitality_delta
 	RunState.unlocked_relics = relic_ids
 	RunState.relic_bonus_strength = relic_strength
 	RunState.relic_bonus_block = relic_block
@@ -112,7 +133,11 @@ static func restore(data: Dictionary) -> bool:
 		potions.append(potion)
 	RunState.potions = potions
 
-	RunState.player_max_hp = maxi(int(data.get("player_max_hp", RunState.player_max_hp)), 1)
+	# Max HP is derived, never read back: RunState.player_max_hp already holds
+	# the skill-derived baseline from load_character_from_meta(), so a skill
+	# unlocked after the last checkpoint keeps its vitality HP on resume. The
+	# snapshot's own player_max_hp is diagnostic only.
+	RunState.player_max_hp = maxi(RunState.player_max_hp + 2 * relic_vitality, 1)
 	RunState.player_current_hp = clampi(int(data.get("player_current_hp", RunState.player_max_hp)), 0, RunState.player_max_hp)
 	RunState.gold = maxi(int(data.get("gold", 0)), 0)
 
@@ -121,6 +146,9 @@ static func restore(data: Dictionary) -> bool:
 	rng.state = str(data.get("rng_state", "0")).to_int()
 	RunState.rng = rng
 	return true
+
+static func _is_number(value: Variant) -> bool:
+	return value is int or value is float
 
 static func _array(data: Dictionary, key: String) -> Array:
 	var raw: Variant = data.get(key, [])
