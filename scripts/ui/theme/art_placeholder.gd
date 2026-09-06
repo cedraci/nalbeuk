@@ -15,7 +15,8 @@ func setup(art_id: StringName, brief: String, art_size: Vector2) -> void:
 	custom_minimum_size = art_size
 	for child in get_children():
 		remove_child(child)
-		child.queue_free()
+		# Safe to free immediately: Label and TextureRect have no signal handlers
+		child.free()
 	label = null
 	texture_rect = null
 	var path: String = ART_DIR + String(art_id) + ".png"
