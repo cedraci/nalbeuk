@@ -186,7 +186,7 @@ func test_ready_loads_the_saved_character():
 	var scene := RunScene.new()
 	add_child_autofree(scene)
 	assert_eq(RunState.level, 3)
-	assert_true(scene.camp_scene.status_label.text.begins_with("Lv 3"))
+	assert_eq(scene.camp_scene.header.level_label.text, "LEVEL 3")
 
 func test_losing_a_run_applies_the_death_penalty_and_shows_it():
 	var scene := _boot_into_run()
