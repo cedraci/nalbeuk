@@ -114,11 +114,18 @@ static func from_dict(data: Dictionary) -> MapGraph:
 			var raw_floor_value: Variant = node_data["floor"]
 			if not (_is_number(raw_id) and _is_number(raw_type) and _is_number(raw_floor_value)):
 				return null
-			var node_type: MapNode.NodeType = int(node_data["type"]) as MapNode.NodeType
-			var node := MapNode.new(int(node_data["id"]), node_type, int(node_data["floor"]))
+			var type_value: int = int(raw_type)
+			# An out-of-range type is a broken snapshot, not a node: it would
+			# crash MapView.display() on NodeType.keys()[node.node_type].
+			if type_value < 0 or type_value >= MapNode.NodeType.size():
+				return null
+			var node_type: MapNode.NodeType = type_value as MapNode.NodeType
+			var node := MapNode.new(int(raw_id), node_type, int(raw_floor_value))
 			var raw_connections: Variant = node_data.get("connections", [])
 			if raw_connections is Array:
 				for connection_id in raw_connections:
+					if not _is_number(connection_id):
+						return null
 					node.connections.append(int(connection_id))
 			node.visited = bool(node_data.get("visited", false))
 			floor_nodes.append(node)

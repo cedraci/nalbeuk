@@ -117,3 +117,14 @@ func test_from_dict_returns_null_when_id_type_or_floor_is_not_a_number():
 	assert_null(MapGraph.from_dict({"floors": [[{"id": 0, "type": "combat", "floor": 0}]]}))
 	assert_null(MapGraph.from_dict({"floors": [[{"id": 0, "type": 0, "floor": [0]}]]}))
 	assert_not_null(MapGraph.from_dict({"floors": [[{"id": 0.0, "type": 0.0, "floor": 0.0}]]}), "JSON floats are numbers and must still be accepted.")
+
+func test_from_dict_returns_null_for_an_out_of_range_node_type():
+	assert_null(MapGraph.from_dict({"floors": [[{"id": 0, "type": 99, "floor": 0}]]}), "99 is not a NodeType.")
+	assert_null(MapGraph.from_dict({"floors": [[{"id": 0, "type": -1, "floor": 0}]]}), "-1 is not a NodeType.")
+	var last_type: int = MapNode.NodeType.size() - 1
+	assert_not_null(MapGraph.from_dict({"floors": [[{"id": 0, "type": last_type, "floor": 0}]]}), "The last NodeType is still valid.")
+
+func test_from_dict_returns_null_when_a_connection_is_not_a_number():
+	assert_null(MapGraph.from_dict({"floors": [[{"id": 0, "type": 0, "floor": 0, "connections": ["x"]}]]}))
+	assert_null(MapGraph.from_dict({"floors": [[{"id": 0, "type": 0, "floor": 0, "connections": [1, {}]}]]}))
+	assert_not_null(MapGraph.from_dict({"floors": [[{"id": 0, "type": 0, "floor": 0, "connections": [1, 2.0]}]]}), "JSON floats are still accepted.")
