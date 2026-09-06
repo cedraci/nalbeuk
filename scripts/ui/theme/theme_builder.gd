@@ -114,13 +114,16 @@ static func _build_buttons(theme: Theme) -> void:
 
 	_node_variation(theme, &"NodeLocked", Color("#1a1613"), Color(1, 1, 1, 0.06), 1, Color("#4a423a"))
 	_node_variation(theme, &"NodeVisited", Color("#221c17"), UiTokens.ember(0.18), 1, UiTokens.DIM)
-	_node_variation(theme, &"NodeOpen", UiTokens.SURFACE_2, UiTokens.EMBER, 1, UiTokens.EMBER)
-	_node_variation(theme, &"NodeCurrent", UiTokens.EMBER, UiTokens.EMBER_LIGHT, 2, UiTokens.BG)
+	_node_variation(theme, &"NodeOpen", UiTokens.SURFACE_2, UiTokens.EMBER, 1, UiTokens.EMBER, 14, UiTokens.ember(0.25))
+	_node_variation(theme, &"NodeCurrent", UiTokens.EMBER, UiTokens.EMBER_LIGHT, 2, UiTokens.BG, 26, UiTokens.ember(0.65))
 
-static func _node_variation(theme: Theme, name: StringName, fill: Color, border: Color, border_width: int, icon_color: Color) -> void:
+static func _node_variation(theme: Theme, name: StringName, fill: Color, border: Color, border_width: int, icon_color: Color, glow_size: int = 0, glow_color: Color = Color(0, 0, 0, 0)) -> void:
 	theme.set_type_variation(name, &"Button")
 	_button_colors(theme, name, icon_color)
 	var box := _flat(fill, border, border_width, 999, 0, 0)
+	if glow_size > 0:
+		box.shadow_size = glow_size
+		box.shadow_color = glow_color
 	theme.set_stylebox(&"normal", name, box)
 	theme.set_stylebox(&"hover", name, box)
 	theme.set_stylebox(&"pressed", name, box)

@@ -159,6 +159,15 @@ func test_header_shows_max_level():
 	map_view.display(parts[0], parts[1])
 	assert_true(map_view.header.level_label.text.contains("MAX"))
 
+func test_the_current_node_pulses_and_survives_a_second_display():
+	var map_view := MapView.new()
+	add_child_autofree(map_view)
+	var parts := _two_floor_graph()
+	map_view.display(parts[0], parts[1])
+	assert_true(map_view.is_pulsing(), "The current node's button pulses.")
+	map_view.display(parts[0], parts[1])
+	assert_true(map_view.is_pulsing(), "The second display() call's tween replaces the first.")
+
 func test_header_buttons_meet_the_hit_target():
 	RunState.start_new_run(DwarfContent.get_class_resource())
 	var map_view := MapView.new()

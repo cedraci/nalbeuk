@@ -48,3 +48,9 @@ func test_size_button_returns_the_button_it_was_given():
 	var button := Button.new()
 	add_child_autofree(button)
 	assert_eq(ThemeBuilder.size_button(button), button)
+
+func test_node_variations_carry_the_designed_glow():
+	var theme := ThemeBuilder.build()
+	assert_eq(theme.get_stylebox(&"normal", &"NodeCurrent").shadow_size, 26)
+	assert_eq(theme.get_stylebox(&"normal", &"NodeOpen").shadow_size, 14)
+	assert_eq(theme.get_stylebox(&"normal", &"NodeLocked").shadow_size, 0)

@@ -29,6 +29,7 @@ var relics_container: HBoxContainer
 var potions_container: HBoxContainer
 
 var _node_buttons: Array = []  # [floor][index] -> Button
+var _pulse_tween: Tween = null
 
 func _ready() -> void:
 	set_anchors_preset(Control.PRESET_FULL_RECT)
@@ -39,7 +40,12 @@ func floor_count() -> int:
 func node_button(floor_index: int, node_index: int) -> Button:
 	return _node_buttons[floor_index][node_index]
 
+func is_pulsing() -> bool:
+	return _pulse_tween != null and _pulse_tween.is_valid()
+
 func display(map: MapGraph, current_node: MapNode) -> void:
+	if _pulse_tween != null:
+		_pulse_tween.kill()
 	for child in get_children():
 		# queue_free(), not free(): display() can run again from inside a
 		# node button's own "pressed" handler chain, so freeing immediately
@@ -130,6 +136,8 @@ func _build_floors(root: Control, map: MapGraph, current_node: MapNode) -> void:
 		for node: MapNode in map.floors[floor_index]:
 			var button := _make_node_button(node, current_node, reachable_ids)
 			row.add_child(button)
+			if button.theme_type_variation == &"NodeCurrent":
+				_start_pulse(button)
 			_node_buttons[floor_index].append(button)
 			buttons_by_id[node.id] = button
 
@@ -143,7 +151,11 @@ func _build_floors(root: Control, map: MapGraph, current_node: MapNode) -> void:
 				var lit: bool = node == current_node and not target.disabled
 				edges.append({"from": buttons_by_id[node.id], "to": target, "lit": lit})
 	paths.set_edges(edges)
-	paths.queue_redraw.call_deferred()
+	_redraw_paths_deferred.call_deferred(paths)
+
+func _redraw_paths_deferred(paths_node: MapPaths) -> void:
+	if is_instance_valid(paths_node):
+		paths_node.queue_redraw()
 
 func _make_node_button(node: MapNode, current_node: MapNode, reachable_ids: Array[int]) -> Button:
 	var button := Button.new()
@@ -158,6 +170,14 @@ func _make_node_button(node: MapNode, current_node: MapNode, reachable_ids: Arra
 	button.theme_type_variation = _node_variation(node, current_node, reachable_ids)
 	button.pressed.connect(_on_node_button_pressed.bind(node))
 	return button
+
+func _start_pulse(button: Button) -> void:
+	if Engine.is_editor_hint():
+		return
+	_pulse_tween = button.create_tween().set_loops()
+	var half: float = UiTokens.PULSE_SECONDS / 2.0
+	_pulse_tween.tween_property(button, "self_modulate:a", 0.8, half).set_trans(Tween.TRANS_SINE)
+	_pulse_tween.tween_property(button, "self_modulate:a", 1.0, half).set_trans(Tween.TRANS_SINE)
 
 func _node_variation(node: MapNode, current_node: MapNode, reachable_ids: Array[int]) -> StringName:
 	if node == current_node:
