@@ -318,3 +318,33 @@ than distorts.
 - Parallax corridor once the three backdrop layers exist.
 - Screen transitions (dim-to-vignette, rise) and card hover motion.
 - A real character-naming pass (Hilde Barrowdust is a placeholder).
+
+## Amendments (2026-09-06, post-review)
+
+- **F1** — no dark background was being painted: every screen except Map/Camp
+  rendered on Godot's default clear colour. Fixed with two layers:
+  `RunScene` creates a public `background: ColorRect` (`UiTokens.BG`) as its
+  first child in `_ready()`, covering the full rect; `project.godot` also
+  sets `[rendering] environment/defaults/default_clear_color` to the same
+  colour as a fallback for any frame drawn before `background` lays out.
+- **F2** — `UiTokens.HIT_TARGET` (44px) was never applied: a Godot `Theme`
+  has no way to set a minimum size. `ThemeBuilder.size_button(button)`
+  enforces it directly (`custom_minimum_size.y = maxf(existing, HIT_TARGET)`)
+  and is called on every non-node button built by `MapView` and `CampScene`;
+  map node buttons keep their own `NODE_SIZE`/`NODE_SIZE_BOSS` sizing.
+- **F4** — the current map node did not pulse and open/current nodes had no
+  glow, leaving `UiTokens.PULSE_SECONDS` unused. `ThemeBuilder._node_variation`
+  gained optional `glow_size`/`glow_color` params that set the shared node
+  `StyleBoxFlat`'s `shadow_size`/`shadow_color` (`NodeOpen` 14px at
+  `ember(0.25)`, `NodeCurrent` 26px at `ember(0.65)`); `MapView` starts a
+  looping `self_modulate:a` tween on the current node's button
+  (`UiTokens.PULSE_SECONDS`), exposed via `is_pulsing()`.
+
+Deferred:
+
+- Button font is Cinzel per the mockups; `HandView` card buttons and
+  `SkillTreeScene` buttons carry multi-line body text and will be redesigned
+  in Plans 4B/4C; until then they are legible but off-style.
+- The mockups' uppercase + 2px letter-spacing on buttons is not applied
+  (Godot has no text-transform; `FontVariation.spacing_glyph` could carry
+  the spacing) — decide in 4B.
