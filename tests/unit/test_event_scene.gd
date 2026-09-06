@@ -12,7 +12,7 @@ func test_display_shows_description_and_one_button_per_choice():
 	assert_false(scene.outcome_label.visible)
 	assert_false(scene.continue_button.visible)
 
-func test_clicking_a_choice_applies_it_and_shows_the_outcome():
+func test_clicking_a_choice_shows_the_outcome_without_applying_it():
 	RunState.start_new_run(DwarfContent.get_class_resource())
 	RunState.gold = 15
 	var initial_gold: int = RunState.gold
@@ -23,11 +23,39 @@ func test_clicking_a_choice_applies_it_and_shows_the_outcome():
 	scene.display(event)
 	var pay_button: Button = scene.choices_container.get_child(0)
 	pay_button.pressed.emit()
-	assert_eq(RunState.gold, initial_gold - 10)
+	assert_eq(RunState.gold, initial_gold, "The choice is only applied on Continue, together with the checkpoint.")
 	assert_false(scene.choices_container.visible)
 	assert_true(scene.outcome_label.visible)
 	assert_eq(scene.outcome_label.text, event.choices[0].outcome_text)
 	assert_true(scene.continue_button.visible)
+
+func test_continue_after_a_choice_applies_it_and_emits_node_completed():
+	RunState.start_new_run(DwarfContent.get_class_resource())
+	RunState.gold = 15
+	var initial_gold: int = RunState.gold
+	var scene := EventScene.new()
+	add_child_autofree(scene)
+	var event := EventsContent.get_all_events()[0]
+	scene.display(event)
+	var pay_button: Button = scene.choices_container.get_child(0)
+	pay_button.pressed.emit()
+	watch_signals(scene)
+	scene.continue_button.pressed.emit()
+	assert_eq(RunState.gold, initial_gold - 10)
+	assert_signal_emitted(scene, "node_completed")
+
+func test_continue_applies_the_choice_only_once():
+	RunState.start_new_run(DwarfContent.get_class_resource())
+	RunState.gold = 15
+	var initial_gold: int = RunState.gold
+	var scene := EventScene.new()
+	add_child_autofree(scene)
+	scene.display(EventsContent.get_all_events()[0])
+	var pay_button: Button = scene.choices_container.get_child(0)
+	pay_button.pressed.emit()
+	scene.continue_button.pressed.emit()
+	scene.continue_button.pressed.emit()
+	assert_eq(RunState.gold, initial_gold - 10)
 
 func test_continue_button_emits_node_completed():
 	RunState.start_new_run(DwarfContent.get_class_resource())

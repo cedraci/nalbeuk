@@ -323,3 +323,54 @@ func test_finishing_a_run_leaves_no_suspended_run_on_the_next_boot():
 	add_child_autofree(again)
 	assert_true(again.camp_scene.start_run_button.visible)
 	assert_false(again.camp_scene.continue_run_button.visible)
+
+# The event the RunScene picks is random, so identify it by its description.
+func _displayed_event(scene: RunScene) -> EventResource:
+	for event in EventsContent.get_all_events():
+		if event.description == scene.event_scene.description_label.text:
+			return event
+	return null
+
+func _index_of_first_xp_choice(event: EventResource) -> int:
+	for i in range(event.choices.size()):
+		if event.choices[i].xp_delta > 0:
+			return i
+	return -1
+
+func _saved_run_section() -> Dictionary:
+	var file := FileAccess.open(RunStateTest.TEST_SAVE_PATH, FileAccess.READ)
+	var parsed: Variant = JSON.parse_string(file.get_as_text())
+	file.close()
+	if parsed is Dictionary and (parsed as Dictionary).get("run", null) is Dictionary:
+		return (parsed as Dictionary)["run"]
+	return {}
+
+func _node_is_visited_in_snapshot(node_id: int) -> bool:
+	for floor_nodes in SaveManager.run_snapshot["map"]["floors"]:
+		for raw_node in floor_nodes:
+			if int(raw_node["id"]) == node_id:
+				return bool(raw_node["visited"])
+	return false
+
+func test_an_event_choice_is_only_committed_when_continue_checkpoints_the_node():
+	var scene := _boot_into_run()
+	var node: MapNode = RunState.map.floors[1][0]
+	node.node_type = MapNode.NodeType.EVENT
+	var checkpointed_node_id: int = int(SaveManager.run_snapshot["current_node_id"])
+	scene.map_view.node_selected.emit(node)
+	var event := _displayed_event(scene)
+	assert_not_null(event, "The displayed event is one of the known events.")
+	var choice_index: int = _index_of_first_xp_choice(event)
+	assert_true(choice_index >= 0, "The event has a choice that grants XP.")
+	var expected_xp: int = event.choices[choice_index].xp_delta
+	var xp_before: int = MetaState.xp
+	var choice_button: Button = scene.event_scene.choices_container.get_child(choice_index)
+	choice_button.pressed.emit()
+	assert_eq(MetaState.xp, xp_before, "XP is not written through before the node is checkpointed.")
+	assert_eq(int(_saved_run_section().get("current_node_id", -1)), checkpointed_node_id, "The snapshot on disk still has the event node unvisited.")
+	assert_false(node.visited)
+	scene.event_scene.continue_button.pressed.emit()
+	assert_eq(MetaState.xp, xp_before + expected_xp, "Continue applies the choice.")
+	assert_true(node.visited)
+	assert_eq(int(SaveManager.run_snapshot["current_node_id"]), node.id)
+	assert_true(_node_is_visited_in_snapshot(node.id), "The checkpoint records the event node as visited.")
