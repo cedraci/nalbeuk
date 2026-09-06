@@ -82,6 +82,7 @@ func _ready() -> void:
 	start_run_button.theme_type_variation = &"Primary"
 	start_run_button.custom_minimum_size = Vector2(0, 56)
 	start_run_button.pressed.connect(_on_start_run_pressed)
+	ThemeBuilder.size_button(start_run_button)
 	actions.add_child(start_run_button)
 	var secondary := HBoxContainer.new()
 	secondary.add_theme_constant_override(&"separation", UiTokens.SPACE_3)
@@ -91,12 +92,14 @@ func _ready() -> void:
 	skill_tree_button.icon = UiIcons.texture(&"tree")
 	skill_tree_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	skill_tree_button.pressed.connect(_on_skill_tree_pressed)
+	ThemeBuilder.size_button(skill_tree_button)
 	secondary.add_child(skill_tree_button)
 	inventory_button = Button.new()
 	inventory_button.text = "Inventory"
 	inventory_button.icon = UiIcons.texture(&"bag")
 	inventory_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	inventory_button.pressed.connect(_on_inventory_pressed)
+	ThemeBuilder.size_button(inventory_button)
 	secondary.add_child(inventory_button)
 	var suspended_row := HBoxContainer.new()
 	suspended_row.add_theme_constant_override(&"separation", UiTokens.SPACE_3)
@@ -106,12 +109,14 @@ func _ready() -> void:
 	continue_run_button.theme_type_variation = &"Primary"
 	continue_run_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	continue_run_button.pressed.connect(_on_continue_run_pressed)
+	ThemeBuilder.size_button(continue_run_button)
 	suspended_row.add_child(continue_run_button)
 	abandon_run_button = Button.new()
 	abandon_run_button.text = "Abandon run"
 	abandon_run_button.theme_type_variation = &"Danger"
 	abandon_run_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	abandon_run_button.pressed.connect(_on_abandon_run_pressed)
+	ThemeBuilder.size_button(abandon_run_button)
 	suspended_row.add_child(abandon_run_button)
 
 	refresh()

@@ -87,11 +87,13 @@ func _build_top_bar(root: Control) -> void:
 	skill_tree_button.text = "Skill Tree"
 	skill_tree_button.icon = UiIcons.texture(&"tree")
 	skill_tree_button.pressed.connect(_on_skill_tree_button_pressed)
+	ThemeBuilder.size_button(skill_tree_button)
 	bar.add_child(skill_tree_button)
 	inventory_button = Button.new()
 	inventory_button.text = "Inventory"
 	inventory_button.icon = UiIcons.texture(&"bag")
 	inventory_button.pressed.connect(_on_inventory_button_pressed)
+	ThemeBuilder.size_button(inventory_button)
 	bar.add_child(inventory_button)
 
 func _build_floors(root: Control, map: MapGraph, current_node: MapNode) -> void:

@@ -23,6 +23,10 @@ static func build() -> Theme:
 	_theme = theme
 	return theme
 
+static func size_button(button: Button) -> Button:
+	button.custom_minimum_size.y = maxf(button.custom_minimum_size.y, UiTokens.HIT_TARGET)
+	return button
+
 static func display_font(weight: int) -> FontVariation:
 	return _variation(DISPLAY_FONT_PATH, weight)
 

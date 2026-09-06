@@ -159,6 +159,15 @@ func test_header_shows_max_level():
 	map_view.display(parts[0], parts[1])
 	assert_true(map_view.header.level_label.text.contains("MAX"))
 
+func test_header_buttons_meet_the_hit_target():
+	RunState.start_new_run(DwarfContent.get_class_resource())
+	var map_view := MapView.new()
+	add_child_autofree(map_view)
+	var parts := _two_floor_graph()
+	map_view.display(parts[0], parts[1])
+	assert_true(map_view.skill_tree_button.custom_minimum_size.y >= UiTokens.HIT_TARGET)
+	assert_true(map_view.inventory_button.custom_minimum_size.y >= UiTokens.HIT_TARGET)
+
 func test_right_column_lists_relics_potions_and_a_banter_line():
 	RunState.start_new_run(DwarfContent.get_class_resource())
 	RunState.grant_relic(DwarfRelics.get_by_id(&"whetstone"))

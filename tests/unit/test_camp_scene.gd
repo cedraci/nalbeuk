@@ -95,6 +95,13 @@ func test_continue_and_abandon_buttons_emit_their_signals():
 	scene.abandon_run_button.pressed.emit()
 	assert_signal_emitted(scene, "abandon_requested")
 
+func test_buttons_meet_the_hit_target():
+	RunState.enter_camp(DwarfContent.get_class_resource())
+	var scene := CampScene.new()
+	add_child_autofree(scene)
+	assert_true(scene.inventory_button.custom_minimum_size.y >= UiTokens.HIT_TARGET)
+	assert_eq(scene.start_run_button.custom_minimum_size.y, 56.0)
+
 func test_refresh_switches_button_sets_when_the_snapshot_goes_away():
 	RunState.enter_camp(DwarfContent.get_class_resource())
 	SaveManager.run_snapshot = {"current_floor": 1}

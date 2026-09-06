@@ -32,3 +32,19 @@ func test_theme_defaults_use_the_body_font_and_text_colour():
 	assert_true(theme.default_font is FontVariation)
 	assert_eq(theme.default_font_size, UiTokens.FONT_BODY)
 	assert_eq(theme.get_color(&"font_color", &"Label"), UiTokens.TEXT)
+
+func test_size_button_enforces_the_hit_target():
+	var button := Button.new()
+	add_child_autofree(button)
+	ThemeBuilder.size_button(button)
+	assert_eq(button.custom_minimum_size.y, UiTokens.HIT_TARGET)
+	var tall_button := Button.new()
+	add_child_autofree(tall_button)
+	tall_button.custom_minimum_size.y = 56
+	ThemeBuilder.size_button(tall_button)
+	assert_eq(tall_button.custom_minimum_size.y, 56.0, "A button already taller than the hit target keeps its own size.")
+
+func test_size_button_returns_the_button_it_was_given():
+	var button := Button.new()
+	add_child_autofree(button)
+	assert_eq(ThemeBuilder.size_button(button), button)
