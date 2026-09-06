@@ -303,3 +303,63 @@ XP halved, Camp shows Start Run. Corrupt only the `run` section of
 - Mid-combat resume (serialize `CombatEncounter`).
 - A confirm step on Abandon Run.
 - Camp dialogue reacting to a suspended or abandoned run.
+
+## Amendments (2026-09-06)
+
+Findings from the whole-branch review of the Plan 3B implementation, and
+the rulings applied. Each one supersedes the section it names.
+
+- **F1 — Event choices apply on Continue (supersedes §3.2's reasoning).**
+  `EventScene` used to call `RunState.apply_event_choice()` the moment a
+  choice button was pressed, while `node_completed` — and therefore
+  `mark_node_visited_and_advance()`'s checkpoint — only fired from
+  Continue. `apply_event_choice` → `grant_xp` writes XP, level and skill
+  points through to `MetaState` and saves, so quitting on the outcome
+  panel kept the XP while the snapshot still held the node unvisited and
+  the pre-event HP and gold: repeatable for unbounded XP. The choice is
+  now held in `_pending_choice` and applied in `_on_continue_pressed()`
+  immediately before `node_completed`, so the mutation and the checkpoint
+  are one synchronous burst. §3.2's claim that write-through saves are
+  harmless mid-node was wrong for Events: it holds only while nothing
+  mid-node mutates never-lost state.
+- **F2 — `RunSnapshot.restore` validates every scalar before writing
+  anything (extends §3.3's "these two checks run first").** `int(null)`,
+  `int({})` and `int([])` abort the enclosing function in GDScript, so a
+  bad scalar returned `false` with map, node, deck, gear, relics and
+  potions already written — leaving the run's gear live at Camp, where
+  the Inventory would commit it to `MetaState`. `current_node_id`,
+  `current_floor`, `player_max_hp`, `player_current_hp` and `gold` must
+  now be numbers, and `rng_seed`/`rng_state` a string or a number; all of
+  them are checked in the same structural block as the map and the node,
+  before the first write. Belt and braces, `RunState.resume_run` re-seeds
+  a clean Camp state (`load_character_from_meta()`,
+  `_reset_run_only_state()`, `map = null`, `current_node = null`,
+  `current_floor = 0`, `in_run = false`) when `restore` returns `false`.
+- **F3 — node type is range-checked (extends §2.2).** `from_dict`
+  accepted any numeric `type`; an out-of-range value (99, -1) produced a
+  `MapNode` that crashed `MapView.display()` on
+  `MapNode.NodeType.keys()[node.node_type]` instead of being reported as
+  a broken snapshot. A node whose `type` falls outside
+  `MapNode.NodeType`, or whose `connections` hold a non-numeric element,
+  is now rejected with `null`.
+- **F4 — max HP on restore is derived, not read back (supersedes §3.3's
+  "relic vitality is not re-applied — it is already baked into the saved
+  `player_max_hp`").** A skill unlocked mid-run and then quit before the
+  next checkpoint lost its +2 per vitality on resume, because `restore`
+  overwrote the baseline `load_character_from_meta()` had just computed.
+  `restore` now sets `player_max_hp` to that meta-derived baseline plus
+  2 × Σ vitality over the restored relics, then clamps the snapshot's
+  `player_current_hp` into `[0, player_max_hp]`. `capture()` still writes
+  `player_max_hp`, for diagnostics only.
+- **F5 — `has_run_snapshot()` rejects `{}` (supersedes §3.1's "is
+  `run_snapshot is Dictionary`").** `{}` is exactly what `capture()`
+  returns when there is no run to capture, so it must not read as a
+  suspended run.
+- **F6 — the save version is read defensively (extends §3.1).**
+  `int(data.get("version", -1))` aborted `load_game()` on
+  `"version": null`, skipping the quarantine and reset entirely. A
+  non-numeric version is now treated as `-1` and follows the existing
+  quarantine path.
+- **F7 — the `run` section is only read when `version >= 2` (conformance
+  with §3.1).** A version-1 file carrying a stray `run` key had it
+  honoured; version 1 now always loads with `run_snapshot = null`.

@@ -538,8 +538,10 @@ func test_failed_unlock_does_not_touch_meta_state():
 	assert_false(RunState.unlock_skill_node(root))
 	assert_eq(MetaState.unlocked_skill_nodes.size(), 0)
 	# start_new_run's own checkpoint already wrote a save file (Task 5), so a
-	# disk file existing is no longer proof this action itself saved anything;
-	# the in-memory assertion above is what this test actually cares about.
+	# disk file existing is no longer proof of anything: read it back instead
+	# and check the failed unlock did not reach it either.
+	assert_true(SaveManager.load_game(), "The checkpoint's file is readable.")
+	assert_eq(MetaState.unlocked_skill_nodes.size(), 0, "Nothing was saved.")
 
 func test_gear_changes_inside_a_run_are_not_written_through():
 	RunState.start_new_run(DwarfContent.get_class_resource())
@@ -549,8 +551,11 @@ func test_gear_changes_inside_a_run_are_not_written_through():
 	assert_eq(MetaState.owned_equipment_ids.size(), 0)
 	assert_eq(MetaState.equipped_weapon_id, &"")
 	# start_new_run's own checkpoint already wrote a save file (Task 5), so a
-	# disk file existing is no longer proof this action itself saved anything;
-	# the in-memory assertions above are what this test actually cares about.
+	# disk file existing is no longer proof of anything: read it back instead
+	# and check the run's gear did not reach it either.
+	assert_true(SaveManager.load_game(), "The checkpoint's file is readable.")
+	assert_eq(MetaState.owned_equipment_ids.size(), 0, "Nothing was saved.")
+	assert_eq(MetaState.equipped_weapon_id, &"", "Nothing was saved.")
 
 func test_gear_changes_at_camp_are_written_through_and_saved():
 	MetaState.owned_equipment_ids = [&"rusty_shortsword", &"chainmail"]
