@@ -13,3 +13,7 @@ func test_get_card_by_id_returns_fresh_instances():
 
 func test_get_card_by_id_returns_null_for_unknown_id():
 	assert_null(DwarfContent.get_card_by_id(&"no_such_card"))
+
+func test_class_resource_names_the_character():
+	assert_eq(DwarfContent.get_class_resource().character_name, "Hilde Barrowdust")
+	assert_eq(DwarfContent.get_class_resource().display_name, "Dwarf")

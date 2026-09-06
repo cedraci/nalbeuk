@@ -5,6 +5,7 @@ static func get_class_resource() -> ClassResource:
 	var class_res := ClassResource.new()
 	class_res.id = &"dwarf"
 	class_res.display_name = "Dwarf"
+	class_res.character_name = "Hilde Barrowdust"
 	class_res.base_hp = 30
 	var deck: Array[CardResource] = []
 	for i in range(4):
