@@ -20,6 +20,13 @@ MetaState="*res://scripts/meta/meta_state.gd"
 SaveManager="*res://scripts/meta/save_manager.gd"
 RunState="*res://scripts/run/run_state.gd"
 
+[display]
+
+window/size/viewport_width=1440
+window/size/viewport_height=900
+window/stretch/mode="canvas_items"
+window/stretch/aspect="keep"
+
 [editor_plugins]
 
 enabled=PackedStringArray("res://addons/gut/plugin.cfg")
