@@ -1,0 +1,213 @@
+{
+  "pages": [
+    {
+      "id": "torchlit",
+      "name": "Torchlit corridor"
+    },
+    {
+      "id": "directions",
+      "name": "Directions (archive)"
+    }
+  ],
+  "artboards": [
+    {
+      "file": "Main.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1440,
+      "h": 900,
+      "title": "Map",
+      "page": "torchlit"
+    },
+    {
+      "file": "Combat.dc.html",
+      "x": 1560,
+      "y": 0,
+      "w": 1440,
+      "h": 900,
+      "title": "Combat",
+      "page": "torchlit"
+    },
+    {
+      "file": "Camp.dc.html",
+      "x": 0,
+      "y": 1060,
+      "w": 1440,
+      "h": 900,
+      "title": "Camp",
+      "page": "torchlit"
+    },
+    {
+      "file": "Tokens.dc.html",
+      "x": 1560,
+      "y": 1060,
+      "w": 1440,
+      "h": 900,
+      "title": "Design system",
+      "page": "torchlit"
+    },
+    {
+      "file": "Directions.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 960,
+      "h": 480,
+      "title": "Four directions — the pick was Torchlit",
+      "page": "directions"
+    },
+    {
+      "file": "D1Map.dc.html",
+      "x": 0,
+      "y": 620,
+      "w": 960,
+      "h": 540,
+      "title": "Bande dessinée — Map",
+      "page": "directions"
+    },
+    {
+      "file": "D1Combat.dc.html",
+      "x": 1040,
+      "y": 620,
+      "w": 960,
+      "h": 540,
+      "title": "Bande dessinée — Combat",
+      "page": "directions"
+    },
+    {
+      "file": "D1Camp.dc.html",
+      "x": 2080,
+      "y": 620,
+      "w": 960,
+      "h": 540,
+      "title": "Bande dessinée — Camp",
+      "page": "directions"
+    },
+    {
+      "file": "D2Map.dc.html",
+      "x": 0,
+      "y": 1300,
+      "w": 960,
+      "h": 540,
+      "title": "Torchlit corridor — Map",
+      "page": "directions"
+    },
+    {
+      "file": "D2Combat.dc.html",
+      "x": 1040,
+      "y": 1300,
+      "w": 960,
+      "h": 540,
+      "title": "Torchlit corridor — Combat",
+      "page": "directions"
+    },
+    {
+      "file": "D2Camp.dc.html",
+      "x": 2080,
+      "y": 1300,
+      "w": 960,
+      "h": 540,
+      "title": "Torchlit corridor — Camp",
+      "page": "directions"
+    },
+    {
+      "file": "D3Map.dc.html",
+      "x": 0,
+      "y": 1980,
+      "w": 960,
+      "h": 540,
+      "title": "Adventurer's notebook — Map",
+      "page": "directions"
+    },
+    {
+      "file": "D3Combat.dc.html",
+      "x": 1040,
+      "y": 1980,
+      "w": 960,
+      "h": 540,
+      "title": "Adventurer's notebook — Combat",
+      "page": "directions"
+    },
+    {
+      "file": "D3Camp.dc.html",
+      "x": 2080,
+      "y": 1980,
+      "w": 960,
+      "h": 540,
+      "title": "Adventurer's notebook — Camp",
+      "page": "directions"
+    },
+    {
+      "file": "D4Map.dc.html",
+      "x": 0,
+      "y": 2660,
+      "w": 960,
+      "h": 540,
+      "title": "Saturday-morning flat — Map",
+      "page": "directions"
+    },
+    {
+      "file": "D4Combat.dc.html",
+      "x": 1040,
+      "y": 2660,
+      "w": 960,
+      "h": 540,
+      "title": "Saturday-morning flat — Combat",
+      "page": "directions"
+    },
+    {
+      "file": "D4Camp.dc.html",
+      "x": 2080,
+      "y": 2660,
+      "w": 960,
+      "h": 540,
+      "title": "Saturday-morning flat — Camp",
+      "page": "directions"
+    }
+  ],
+  "annotations": [
+    {
+      "id": "torchlit-brief",
+      "x": 3120,
+      "y": 0,
+      "w": 300,
+      "page": "torchlit",
+      "text": "Torchlit corridor — the pick.\n\nArt boxes are placeholders for AI-generated images; each carries its prompt brief. Same screens as the game today, plus the run summary column (relics/potions) and draw/discard counts the engine already tracks.\n\nNext: turn Tokens into a Godot Theme + tokens file, then apply screen by screen."
+    },
+    {
+      "id": "why-d1",
+      "x": 3120,
+      "y": 620,
+      "w": 260,
+      "page": "directions",
+      "text": "Bande dessinée\n\nAxis: humour in the chrome itself"
+    },
+    {
+      "id": "why-d2",
+      "x": 3120,
+      "y": 1300,
+      "w": 260,
+      "page": "directions",
+      "text": "Torchlit corridor\n\nAxis: atmosphere in the world, quiet chrome\n\n✔ chosen"
+    },
+    {
+      "id": "why-d3",
+      "x": 3120,
+      "y": 1980,
+      "w": 260,
+      "page": "directions",
+      "text": "Adventurer's notebook\n\nAxis: tactile, in-fiction object (the logbook)"
+    },
+    {
+      "id": "why-d4",
+      "x": 3120,
+      "y": 2660,
+      "w": 260,
+      "page": "directions",
+      "text": "Saturday-morning flat\n\nAxis: animated-comedy energy, cheapest at quality"
+    }
+  ],
+  "launch": {
+    "view": "canvas",
+    "page": "torchlit"
+  }
+}

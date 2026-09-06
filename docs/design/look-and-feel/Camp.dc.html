@@ -1,0 +1,78 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <title>Torchlit corridor — Camp</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;800&family=Source+Sans+3:wght@400;600;700&display=swap">
+  <style>
+    body { margin:0; }
+    a { color:#e8a44a; } a:hover { color:#f3c274; }
+
+    :root { --bg:#14110f; --surface:#1f1a16; --surface2:#2a231d; --line:rgba(232,164,74,.26); --text:#ece3d3; --muted:#8f857a; --ember:#e8a44a; --rune:#74b0d6; }
+    .stone { position:absolute; inset:0; background-image: linear-gradient(rgba(255,255,255,.028) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.02) 1px, transparent 1px); background-size: 64px 36px, 128px 36px; }
+    .glow { position:absolute; border-radius:50%; background: radial-gradient(circle, rgba(232,164,74,.38) 0%, rgba(232,164,74,0) 66%); filter: blur(8px); animation: flicker 3.4s ease-in-out infinite; pointer-events:none; }
+    @keyframes flicker { 0%,100% { opacity:.92; transform:scale(1); } 35% { opacity:.72; transform:scale(.97); } 70% { opacity:1; transform:scale(1.02); } }
+    .vignette { position:absolute; inset:0; background: radial-gradient(ellipse at 50% 45%, rgba(0,0,0,0) 40%, rgba(0,0,0,.6) 100%); pointer-events:none; }
+    .panel { background: rgba(31,26,22,.94); border:1px solid rgba(232,164,74,.26); border-radius:6px; box-shadow: 0 10px 30px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.04); }
+    .btn { font-family:'Cinzel', 'Georgia', 'Times New Roman', serif; font-weight:800; font-size:14px; letter-spacing:2px; text-transform:uppercase; color:#e8a44a; background: rgba(232,164,74,.07); border:1px solid rgba(232,164,74,.55); border-radius:4px; padding:12px 22px; display:inline-flex; align-items:center; justify-content:center; gap:10px; min-height:44px; box-sizing:border-box; }
+    .btn.primary { background: linear-gradient(180deg, #f0b25c, #e8a44a); color:#14110f; border-color:#f3c274; box-shadow: 0 0 22px rgba(232,164,74,.35); }
+    .btn.ghost { border-color: transparent; color:#8f857a; background: transparent; }
+    .btn.danger { color:#e07a66; border-color: rgba(201,74,59,.6); background: rgba(201,74,59,.08); }
+    .eyebrow { font-family:'Cinzel', 'Georgia', 'Times New Roman', serif; font-weight:800; font-size:12px; letter-spacing:3px; text-transform:uppercase; color:#e8a44a; }
+    .h1 { font-family:'Cinzel', 'Georgia', 'Times New Roman', serif; font-weight:800; font-size:40px; letter-spacing:4px; text-transform:uppercase; color:#e8a44a; }
+    .h2 { font-family:'Cinzel', 'Georgia', 'Times New Roman', serif; font-weight:800; font-size:20px; letter-spacing:2px; text-transform:uppercase; color:#ece3d3; }
+    .num { font-family:'Cinzel', 'Georgia', 'Times New Roman', serif; font-weight:800; }
+    .chip { display:inline-flex; align-items:center; gap:6px; padding:5px 10px; border-radius:999px; font-size:13px; font-weight:600; border:1px solid rgba(255,255,255,.07); background: rgba(255,255,255,.04); color:#ece3d3; }
+    .bar { height:8px; border-radius:4px; background:#2a231d; overflow:hidden; border:1px solid rgba(0,0,0,.4); }
+    .bar > div { height:100%; border-radius:4px; }
+    .card { width:172px; height:236px; border-radius:8px; background: linear-gradient(180deg, #2a231d, #1f1a16); border:1px solid rgba(232,164,74,.35); box-shadow: 0 12px 26px rgba(0,0,0,.55), inset 0 1px 0 rgba(255,255,255,.05); position:relative; display:flex; flex-direction:column; gap:8px; padding:12px; box-sizing:border-box; transition: transform .18s ease; }
+    .card.hover { transform: translateY(-18px); border-color:#e8a44a; box-shadow: 0 18px 34px rgba(0,0,0,.6), 0 0 28px rgba(232,164,74,.35); }
+    .cost { position:absolute; left:-10px; top:-10px; width:32px; height:32px; border-radius:50%; background: radial-gradient(circle at 35% 35%, #f3c274, #e8a44a 55%, #9a5f1f); color:#14110f; display:flex; align-items:center; justify-content:center; font-family:'Cinzel', 'Georgia', 'Times New Roman', serif; font-weight:800; font-size:15px; box-shadow: 0 0 12px rgba(232,164,74,.6); }
+    .art { display:flex; align-items:center; justify-content:center; text-align:center; font-size:12px; color:#8f857a; border:1px dashed rgba(232,164,74,.35); border-radius:6px; background: rgba(0,0,0,.25); padding:6px; box-sizing:border-box; }
+    .path { stroke: rgba(232,164,74,.28); stroke-width:2; fill:none; stroke-dasharray: 4 6; }
+    .path.lit { stroke:#e8a44a; stroke-dasharray:none; }
+    .node { width:56px; height:56px; border-radius:50%; display:flex; align-items:center; justify-content:center; box-sizing:border-box; }
+    .node.locked { background:#1a1613; border:1px solid rgba(255,255,255,.06); color:#4a423a; }
+    .node.visited { background:#221c17; border:1px solid rgba(232,164,74,.18); color:#7a7166; }
+    .node.open { background:#2a231d; border:1px solid #e8a44a; color:#e8a44a; box-shadow: 0 0 14px rgba(232,164,74,.25); }
+    .node.current { background:#e8a44a; border:2px solid #f3c274; color:#14110f; box-shadow: 0 0 26px rgba(232,164,74,.65); animation: pulse 2.2s ease-in-out infinite; }
+    @keyframes pulse { 0%,100% { box-shadow:0 0 22px rgba(232,164,74,.5); } 50% { box-shadow:0 0 34px rgba(232,164,74,.85); } }
+    .node.boss { width:72px; height:72px; }
+    .label { font-size:12px; color:#8f857a; letter-spacing:1px; text-transform:uppercase; }
+
+  </style>
+</helmet>
+<div style="position:relative;width:1440px;height:900px;overflow:hidden;background:#14110f;font-family:'Source Sans 3', 'Segoe UI', 'Helvetica Neue', sans-serif;color:#ece3d3;font-size:15px">
+    <div class="stone"></div>
+    <div class="art" style="width:820px;height:900px;position:absolute;left:0;top:0;border:0;border-radius:0;background:transparent;color:#4a423a;border-right:1px solid rgba(232,164,74,.18)">[art: camp: a low fire in a stone alcove, packs against the wall, the party arguing in silhouette; one of them is trying to light the fire with a spellbook]</div>
+    <div class="glow" style="left:120px;top:300px;width:560px;height:560px"></div>
+    <div style="position:absolute;left:880px;top:90px;width:500px;display:flex;flex-direction:column;gap:26px">
+      <div><div class="eyebrow">Between expeditions</div><div class="h1" style="margin-top:6px">Camp</div>
+        <div style="font-size:17px;font-style:italic;color:#8f857a;margin-top:8px;line-height:1.45">The party argues over who lost the map.</div></div>
+      <div class="panel" style="padding:18px 20px;display:flex;flex-direction:column;gap:14px">
+        <div style="display:flex;align-items:center;gap:18px">
+          <div class="num" style="font-size:30px;color:#e8a44a;letter-spacing:2px">LV 2</div>
+          <div style="flex:1;display:flex;flex-direction:column;gap:6px"><div style="display:flex;justify-content:space-between;font-size:12px;color:#8f857a"><span>Experience</span><span>7 / 30</span></div><div class="bar"><div style="width:23%;background:#e8a44a"></div></div></div>
+          <div class="chip" style="border-color:rgba(232,164,74,.5);color:#e8a44a"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="M10 17V9"/><path d="M6 13h8"/><circle cx="10" cy="6" r="3"/><circle cx="5" cy="13" r="2"/><circle cx="15" cy="13" r="2"/></svg> 1 point</div>
+        </div>
+        <div style="display:flex;flex-direction:column"><div style="display:grid;grid-template-columns:repeat(3, minmax(0, 1fr));gap:12px;padding:10px 0;border-top:1px solid rgba(255,255,255,.07);align-items:center"><div class="label">Weapon</div><div style="font-size:15px;color:#ece3d3">Rusty Shortsword</div><div style="font-size:12px;color:#8f857a">+2 Strength</div></div><div style="display:grid;grid-template-columns:repeat(3, minmax(0, 1fr));gap:12px;padding:10px 0;border-top:1px solid rgba(255,255,255,.07);align-items:center"><div class="label">Armor</div><div style="font-size:15px;color:#7a7166">— empty —</div><div style="font-size:12px;color:#8f857a"></div></div><div style="display:grid;grid-template-columns:repeat(3, minmax(0, 1fr));gap:12px;padding:10px 0;border-top:1px solid rgba(255,255,255,.07);align-items:center"><div class="label">Trinket</div><div style="font-size:15px;color:#ece3d3">Lucky Charm</div><div style="font-size:12px;color:#8f857a">+2 Strength stacks at the start of every fight</div></div></div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <div class="btn primary" style="min-height:56px;font-size:16px"><svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="M10 3c1 3 4 4 4 8a4 4 0 0 1-8 0c0-2 1-3 2-4 0 1 .5 2 1 2 0-2 .5-4 1-6z"/></svg> Start run</div>
+        <div style="display:grid;grid-template-columns:repeat(2, minmax(0, 1fr));gap:12px"><div class="btn"><svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="M10 17V9"/><path d="M6 13h8"/><circle cx="10" cy="6" r="3"/><circle cx="5" cy="13" r="2"/><circle cx="15" cy="13" r="2"/></svg> Skill Tree</div><div class="btn"><svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="M5 8h10l-1 9H6z"/><path d="M8 8V6a2 2 0 0 1 4 0v2"/></svg> Inventory</div></div>
+      </div>
+      <div class="panel" style="padding:12px 16px;display:flex;flex-direction:column;gap:10px;border-style:dashed">
+        <div class="label">While a run is suspended, this column becomes</div>
+        <div style="display:grid;grid-template-columns:repeat(2, minmax(0, 1fr));gap:12px"><div class="btn primary">Continue run</div><div class="btn danger">Abandon run</div></div>
+        <div style="font-size:13px;font-style:italic;color:#8f857a">The party is still out there, arguing about which way is north.</div>
+      </div>
+    </div>
+    <div class="vignette"></div></div>
+</x-dc>
+</body>
+</html>

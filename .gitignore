@@ -2,3 +2,6 @@
 .import/
 export_presets.cfg
 *.translation
+
+# Seeded design canvas (2 MiB editor payload); the .dc.html sources and canvas.json are the record
+docs/design/look-and-feel/nalbeuk-look-and-feel.html

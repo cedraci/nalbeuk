@@ -1,0 +1,53 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <title>Bande dessinée — Combat</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bangers&family=Nunito:wght@500;700;800&display=swap">
+  <style>
+    body { margin: 0; }
+    a { color: inherit; } a:hover { color: inherit; }
+
+    .halftone { background-image: radial-gradient(#1b1a17 0.9px, transparent 1px); background-size: 6px 6px; opacity: .18; }
+    .panel { background: #fffaf0; border: 3px solid #1b1a17; box-shadow: 5px 5px 0 #1b1a17; }
+    .tilt-l { transform: rotate(-0.8deg); } .tilt-r { transform: rotate(0.6deg); }
+    .bubble { position: relative; background: #fffaf0; border: 3px solid #1b1a17; border-radius: 22px; padding: 10px 14px; font-family: 'Nunito', sans-serif; font-weight: 800; font-size: 14px; }
+    .bubble:after { content: ""; position: absolute; left: 28px; bottom: -14px; border: 8px solid transparent; border-top: 10px solid #1b1a17; border-bottom: 0; }
+    .bubble:before { content: ""; position: absolute; left: 31px; bottom: -8px; border: 5px solid transparent; border-top: 8px solid #fffaf0; border-bottom: 0; z-index: 1; }
+    .fx { font-family: 'Bangers', sans-serif; color: #e63b2e; -webkit-text-stroke: 1.5px #1b1a17; letter-spacing: 1px; }
+    .btn { font-family: 'Bangers', sans-serif; font-size: 20px; letter-spacing: 1px; color: #1b1a17; background: #f7c948; border: 3px solid #1b1a17; box-shadow: 3px 3px 0 #1b1a17; padding: 8px 18px; }
+    .btn.primary { background: #e63b2e; color: #fffaf0; }
+    
+  </style>
+</helmet>
+<div style="position:relative;width:960px;height:540px;overflow:hidden;background:#f4ecd8;font-family:'Nunito', 'Trebuchet MS', sans-serif;color:#1b1a17">
+    <div class="halftone" style="position:absolute;inset:0"></div>
+    <div class="panel tilt-r" style="position:absolute;left:560px;top:40px;width:330px;padding:12px;display:flex;gap:12px">
+      <div style="width:120px;height:120px;display:flex;align-items:center;justify-content:center;text-align:center;font-family:'Nunito', 'Trebuchet MS', sans-serif;font-size:12px;color:#6b6558;border:2px dashed #6b6558;border-radius:8px;">[art: Alpha Cave Rat, snarling]</div>
+      <div style="display:flex;flex-direction:column;gap:6px;justify-content:center">
+        <div style="font-family:'Bangers', 'Impact', 'Arial Narrow', sans-serif;font-size:24px;letter-spacing:1px">ALPHA CAVE RAT</div>
+        <div style="display:flex;align-items:center;gap:6px;font-family:'Nunito', 'Trebuchet MS', sans-serif;font-weight:700;font-size:14px"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="M10 16s-6-3.5-6-8a3 3 0 0 1 6-1 3 3 0 0 1 6 1c0 4.5-6 8-6 8z"/></svg><span>HP 30/30</span></div>
+        <div class="bubble" style="margin-top:6px;font-size:13px">Next: BITE for 7</div>
+      </div></div>
+    <div class="fx" style="position:absolute;left:470px;top:190px;font-size:52px;transform:rotate(-12deg)">CRUNCH!</div>
+    <div class="panel tilt-l" style="position:absolute;left:40px;top:60px;width:300px;padding:12px;display:flex;gap:12px">
+      <div style="width:96px;height:120px;display:flex;align-items:center;justify-content:center;text-align:center;font-family:'Nunito', 'Trebuchet MS', sans-serif;font-size:12px;color:#6b6558;border:2px dashed #6b6558;border-radius:8px;">[art: the Dwarf, unimpressed]</div>
+      <div style="display:flex;flex-direction:column;gap:6px;justify-content:center">
+        <div style="font-family:'Bangers', 'Impact', 'Arial Narrow', sans-serif;font-size:24px;letter-spacing:1px">THE DWARF</div>
+        <div style="display:flex;align-items:center;gap:6px;font-family:'Nunito', 'Trebuchet MS', sans-serif;font-weight:700;font-size:14px"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="M10 16s-6-3.5-6-8a3 3 0 0 1 6-1 3 3 0 0 1 6 1c0 4.5-6 8-6 8z"/></svg><span>HP 21/36</span></div><div style="display:flex;align-items:center;gap:6px;font-family:'Nunito', 'Trebuchet MS', sans-serif;font-weight:700;font-size:14px"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="M10 3l6 2v5c0 4-3 6-6 7-3-1-6-3-6-7V5z"/></svg><span>Block 5</span></div><div style="display:flex;align-items:center;gap:6px;font-family:'Nunito', 'Trebuchet MS', sans-serif;font-weight:700;font-size:14px"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="M11 3L5 11h4l-1 6 6-8h-4z"/></svg><span>Energy 3/3</span></div>
+      </div></div>
+    <div class="bubble" style="position:absolute;left:60px;top:220px;width:230px">"I had a plan. The plan was hitting it."</div>
+    <div style="position:absolute;left:0;right:0;bottom:0;height:200px;background:#fffaf0;border-top:3px solid #1b1a17"></div>
+    <div style="position:absolute;left:40px;bottom:22px;display:flex;gap:10px;align-items:flex-end"><div class="panel" style="width:120px;height:160px;padding:10px;position:relative;transform:rotate(-4deg) translateY(12px);display:flex;flex-direction:column;gap:8px"><div style="position:absolute;left:-8px;top:-8px;width:26px;height:26px;border-radius:50%;background:#f7c948;color:#1b1a17;border:3px solid #1b1a17;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px">1</div><div style="font-family:'Bangers', 'Impact', 'Arial Narrow', sans-serif;font-size:20px;letter-spacing:1px">Strike</div><div style="width:100px;height:62px;display:flex;align-items:center;justify-content:center;text-align:center;font-family:'Nunito', 'Trebuchet MS', sans-serif;font-size:12px;color:#6b6558;border:2px dashed #6b6558;border-radius:8px;font-size:10px">[art: strike art]</div><div style="font-family:'Nunito', 'Trebuchet MS', sans-serif;font-size:12px;color:#6b6558">Deal 6 damage.</div></div><div class="panel" style="width:120px;height:160px;padding:10px;position:relative;transform:rotate(-2deg) translateY(6px);display:flex;flex-direction:column;gap:8px"><div style="position:absolute;left:-8px;top:-8px;width:26px;height:26px;border-radius:50%;background:#f7c948;color:#1b1a17;border:3px solid #1b1a17;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px">1</div><div style="font-family:'Bangers', 'Impact', 'Arial Narrow', sans-serif;font-size:20px;letter-spacing:1px">Strike</div><div style="width:100px;height:62px;display:flex;align-items:center;justify-content:center;text-align:center;font-family:'Nunito', 'Trebuchet MS', sans-serif;font-size:12px;color:#6b6558;border:2px dashed #6b6558;border-radius:8px;font-size:10px">[art: strike art]</div><div style="font-family:'Nunito', 'Trebuchet MS', sans-serif;font-size:12px;color:#6b6558">Deal 6 damage.</div></div><div class="panel" style="width:120px;height:160px;padding:10px;position:relative;transform:rotate(0deg) translateY(0px);display:flex;flex-direction:column;gap:8px"><div style="position:absolute;left:-8px;top:-8px;width:26px;height:26px;border-radius:50%;background:#f7c948;color:#1b1a17;border:3px solid #1b1a17;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px">1</div><div style="font-family:'Bangers', 'Impact', 'Arial Narrow', sans-serif;font-size:20px;letter-spacing:1px">Guard</div><div style="width:100px;height:62px;display:flex;align-items:center;justify-content:center;text-align:center;font-family:'Nunito', 'Trebuchet MS', sans-serif;font-size:12px;color:#6b6558;border:2px dashed #6b6558;border-radius:8px;font-size:10px">[art: guard art]</div><div style="font-family:'Nunito', 'Trebuchet MS', sans-serif;font-size:12px;color:#6b6558">Gain 5 Block.</div></div><div class="panel" style="width:120px;height:160px;padding:10px;position:relative;transform:rotate(2deg) translateY(6px);display:flex;flex-direction:column;gap:8px"><div style="position:absolute;left:-8px;top:-8px;width:26px;height:26px;border-radius:50%;background:#f7c948;color:#1b1a17;border:3px solid #1b1a17;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px">1</div><div style="font-family:'Bangers', 'Impact', 'Arial Narrow', sans-serif;font-size:20px;letter-spacing:1px">Strike+</div><div style="width:100px;height:62px;display:flex;align-items:center;justify-content:center;text-align:center;font-family:'Nunito', 'Trebuchet MS', sans-serif;font-size:12px;color:#6b6558;border:2px dashed #6b6558;border-radius:8px;font-size:10px">[art: strike+ art]</div><div style="font-family:'Nunito', 'Trebuchet MS', sans-serif;font-size:12px;color:#6b6558">Deal 9 damage.</div></div><div class="panel" style="width:120px;height:160px;padding:10px;position:relative;transform:rotate(4deg) translateY(12px);display:flex;flex-direction:column;gap:8px"><div style="position:absolute;left:-8px;top:-8px;width:26px;height:26px;border-radius:50%;background:#f7c948;color:#1b1a17;border:3px solid #1b1a17;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px">1</div><div style="font-family:'Bangers', 'Impact', 'Arial Narrow', sans-serif;font-size:20px;letter-spacing:1px">Guard</div><div style="width:100px;height:62px;display:flex;align-items:center;justify-content:center;text-align:center;font-family:'Nunito', 'Trebuchet MS', sans-serif;font-size:12px;color:#6b6558;border:2px dashed #6b6558;border-radius:8px;font-size:10px">[art: guard art]</div><div style="font-family:'Nunito', 'Trebuchet MS', sans-serif;font-size:12px;color:#6b6558">Gain 5 Block.</div></div></div>
+    <div style="position:absolute;right:40px;bottom:120px;display:flex;flex-direction:column;gap:10px;align-items:flex-end">
+      <div class="btn" style="display:flex;align-items:center;gap:6px"><svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="M8 3h4M9 3v5l-4 7a1 1 0 0 0 1 2h8a1 1 0 0 0 1-2l-4-7V3"/></svg> Healing Draught</div>
+      <div class="btn primary" style="font-size:24px">END TURN</div></div>
+</div>
+</x-dc>
+</body>
+</html>

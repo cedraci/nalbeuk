@@ -1,0 +1,44 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <title>Adventurer's notebook — Camp</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&family=Crimson+Pro:wght@500;700&display=swap">
+  <style>
+    body { margin: 0; }
+    a { color: inherit; } a:hover { color: inherit; }
+
+    .page { background: #efe4c8; background-image: repeating-linear-gradient(transparent 0 27px, rgba(43,33,22,.09) 27px 28px); box-shadow: 0 10px 30px rgba(0,0,0,.35); }
+    .stain { position: absolute; border-radius: 50%; border: 6px solid rgba(120,80,30,.16); box-shadow: inset 0 0 12px rgba(120,80,30,.12); }
+    .note { font-family: 'Caveat', cursive; font-weight: 700; color: #8b2f22; font-size: 19px; line-height: 1.05; }
+    .note.green { color: #3f6b3a; } .note.ink { color: #2b2116; }
+    .scrap { background: #f8f0d8; border: 1px solid rgba(43,33,22,.35); box-shadow: 2px 3px 6px rgba(0,0,0,.25); position: relative; }
+    .tape { position: absolute; width: 46px; height: 14px; background: rgba(255,240,180,.7); border: 1px solid rgba(120,100,40,.25); transform: rotate(-6deg); top: -7px; left: 50%; margin-left: -23px; }
+    .btn { font-family: 'Caveat', cursive; font-weight: 700; font-size: 22px; color: #2b2116; background: #f8f0d8; border: 1.5px solid #2b2116; border-radius: 4px 12px 6px 14px / 10px 6px 14px 4px; padding: 6px 18px; }
+    .btn.primary { background: #8b2f22; color: #f8f0d8; }
+    
+  </style>
+</helmet>
+<div style="position:relative;width:960px;height:540px;overflow:hidden;background:#5a3a22;font-family:'Crimson Pro', 'Georgia', serif;color:#2b2116">
+    <div style="position:absolute;inset:0"><div style="width:960px;height:540px;display:flex;align-items:center;justify-content:center;text-align:center;font-family:'Crimson Pro', 'Georgia', serif;font-size:12px;color:#7a6a52;border:2px dashed #7a6a52;border-radius:8px;border:0;border-radius:0;color:#e7d8a8;border-color:#7a6a52">[art: tavern table, top-down: tankards, crumbs, the notebook]</div></div>
+    <div class="page" style="position:absolute;left:90px;top:40px;width:560px;height:460px;transform:rotate(-2deg)"></div>
+    <div class="stain" style="left:520px;top:80px;width:80px;height:80px"></div>
+    <div style="position:absolute;left:130px;top:70px;font-family:'Crimson Pro', 'Georgia', serif;font-weight:700;font-size:26px;color:#2b2116;transform:rotate(-2deg)">Between expeditions</div>
+    <div class="note" style="position:absolute;left:130px;top:120px;width:460px;transform:rotate(-2deg)">The party argues over who lost the map. (It was the Dwarf.)</div>
+    <div class="note ink" style="position:absolute;left:130px;top:180px;transform:rotate(-2deg)">Lv 2 · 7/30 xp · 1 point to spend</div>
+    <div class="note ink" style="position:absolute;left:130px;top:215px;width:460px;font-size:16px;transform:rotate(-2deg)">Weapon: Rusty Shortsword · Armor: — empty — · Trinket: Lucky Charm</div>
+    <div style="position:absolute;left:130px;top:290px;transform:rotate(-2deg)"><div style="width:200px;height:150px;display:flex;align-items:center;justify-content:center;text-align:center;font-family:'Crimson Pro', 'Georgia', serif;font-size:12px;color:#7a6a52;border:2px dashed #7a6a52;border-radius:8px;border-color:#7a6a52;background:transparent">[art: doodle: dwarf snoring under the table]</div></div>
+    <div style="position:absolute;left:690px;top:120px;display:flex;flex-direction:column;gap:14px;width:220px">
+      <div class="btn primary" style="text-align:center;font-size:26px">Start run</div>
+      <div class="btn" style="text-align:center">Skill Tree</div>
+      <div class="btn" style="text-align:center">Inventory</div>
+    </div>
+</div>
+</x-dc>
+</body>
+</html>
