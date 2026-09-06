@@ -374,3 +374,9 @@ func test_an_event_choice_is_only_committed_when_continue_checkpoints_the_node()
 	assert_true(node.visited)
 	assert_eq(int(SaveManager.run_snapshot["current_node_id"]), node.id)
 	assert_true(_node_is_visited_in_snapshot(node.id), "The checkpoint records the event node as visited.")
+
+func test_run_scene_applies_the_torchlit_theme_to_its_tree():
+	var scene := RunScene.new()
+	add_child_autofree(scene)
+	assert_eq(scene.theme, ThemeBuilder.build())
+	assert_eq(scene.camp_scene.get_theme_font_size(&"font_size", &"Display"), UiTokens.FONT_H1, "Children resolve the inherited theme's variations.")
