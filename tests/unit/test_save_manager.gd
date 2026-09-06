@@ -104,12 +104,31 @@ func test_run_snapshot_round_trips_through_the_file():
 	assert_eq(int(SaveManager.run_snapshot["gold"]), 12)
 
 func test_version_one_file_loads_with_no_suspended_run():
-	_write_raw(JSON.stringify({"version": 1, "meta": {"level": 4}}))
+	# Spec 3.1: a version-1 file loads with run_snapshot = null, whatever a
+	# "run" key it should not have happens to hold.
+	_write_raw(JSON.stringify({"version": 1, "meta": {"level": 4}, "run": {"current_floor": 1}}))
 	SaveManager.run_snapshot = {"stale": true}
 	assert_true(SaveManager.load_game())
 	assert_eq(MetaState.level, 4)
 	assert_false(SaveManager.has_run_snapshot())
 	assert_false(FileAccess.file_exists(TEST_PATH + ".bad"), "A version-1 file is not quarantined.")
+
+func test_has_run_snapshot_rejects_an_empty_dictionary():
+	SaveManager.run_snapshot = {}
+	assert_false(SaveManager.has_run_snapshot(), "An empty snapshot is not a suspended run.")
+
+func test_load_with_a_null_version_quarantines_the_file_and_resets():
+	_write_raw(JSON.stringify({"version": null, "meta": {"level": 6}}))
+	MetaState.level = 6
+	assert_false(SaveManager.load_game())
+	assert_eq(MetaState.level, 1)
+	assert_true(FileAccess.file_exists(TEST_PATH + ".bad"))
+
+func test_load_with_a_non_numeric_version_quarantines_the_file_and_resets():
+	_write_raw(JSON.stringify({"version": "two", "meta": {"level": 6}}))
+	assert_false(SaveManager.load_game())
+	assert_eq(MetaState.level, 1)
+	assert_true(FileAccess.file_exists(TEST_PATH + ".bad"))
 
 func test_malformed_run_section_is_dropped_but_the_character_is_kept():
 	_write_raw(JSON.stringify({"version": 2, "meta": {"level": 3}, "run": "garbage"}))
