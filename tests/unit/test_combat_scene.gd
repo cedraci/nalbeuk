@@ -98,6 +98,31 @@ func test_end_turn_button_shows_result_overlay_with_loss_message():
 	assert_true(scene.result_container.visible)
 	assert_false(scene.turn_ui_container.visible)
 
+func test_uses_the_forest_backdrop_on_floor_zero():
+	RunState.start_new_run(DwarfContent.get_class_resource())
+	var scene := CombatScene.new()
+	add_child_autofree(scene)
+	var player := _make_actor(20)
+	var enemy := _make_actor(20)
+	var deck: Array[CardResource] = [_make_strike(3)]
+	var encounter := CombatEncounter.new(player, deck, enemy, [_make_attack_move(3)])
+	scene.start(encounter)
+	assert_eq(scene.eyebrow_label.text, "Floor 1 · Combat")
+	assert_string_contains(scene.background.label.text, "forest")
+
+func test_uses_the_dungeon_backdrop_from_floor_one_on():
+	RunState.start_new_run(DwarfContent.get_class_resource())
+	RunState.current_floor = 1
+	var scene := CombatScene.new()
+	add_child_autofree(scene)
+	var player := _make_actor(20)
+	var enemy := _make_actor(20)
+	var deck: Array[CardResource] = [_make_strike(3)]
+	var encounter := CombatEncounter.new(player, deck, enemy, [_make_attack_move(3)])
+	scene.start(encounter)
+	assert_eq(scene.eyebrow_label.text, "Floor 2 · Combat")
+	assert_string_contains(scene.background.label.text, "vaulted chamber")
+
 func test_relic_row_shows_one_chip_per_unlocked_relic():
 	RunState.start_new_run(DwarfContent.get_class_resource())
 	RunState.unlocked_relics = [&"whetstone", &"reinforced_buckle"]

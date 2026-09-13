@@ -8,9 +8,14 @@ class_name CombatScene
 
 signal combat_dismissed(player_won: bool)
 
+const FOREST_BACKDROP_BRIEF := "combat backdrop — the forest's edge at dusk, the dungeon's stone maw just visible through the trees behind"
+const DUNGEON_BACKDROP_BRIEF := "combat backdrop — a low vaulted chamber, one torch bracket each side, rubble"
+
 var encounter: CombatEncounter
 var _last_result_player_won: bool = false
 
+var background: ArtPlaceholder
+var eyebrow_label: Label
 var player_panel: ActorPanel
 var enemy_panel: ActorPanel
 var player_art: ArtPlaceholder
@@ -57,8 +62,7 @@ func _ready() -> void:
 	result_container.add_child(play_again_button)
 
 func _build_backdrop(parent: Control) -> void:
-	var background := ArtPlaceholder.new()
-	background.setup(&"combat_backdrop", "combat backdrop — a low vaulted chamber, one torch bracket each side, rubble", Vector2(1440, 560))
+	background = ArtPlaceholder.new()
 	background.position = Vector2(0, 0)
 	background.size = Vector2(1440, 560)
 	parent.add_child(background)
@@ -74,11 +78,10 @@ func _build_backdrop(parent: Control) -> void:
 	parent.add_child(glow_right)
 
 func _build_top_bar(parent: Control) -> void:
-	var eyebrow := Label.new()
-	eyebrow.theme_type_variation = &"Eyebrow"
-	eyebrow.text = "Floor %d · Combat" % (RunState.current_floor + 1)
-	eyebrow.position = Vector2(40, 22)
-	parent.add_child(eyebrow)
+	eyebrow_label = Label.new()
+	eyebrow_label.theme_type_variation = &"Eyebrow"
+	eyebrow_label.position = Vector2(40, 22)
+	parent.add_child(eyebrow_label)
 
 	relic_row = HBoxContainer.new()
 	relic_row.add_theme_constant_override(&"separation", UiTokens.SPACE_2)
@@ -91,7 +94,6 @@ func _build_enemy_stage(parent: Control) -> void:
 	parent.add_child(intent_view)
 
 	enemy_art = ArtPlaceholder.new()
-	enemy_art.setup(&"enemy_default", "the enemy, lit from below, ready to lunge", Vector2(288, 266))
 	enemy_art.position = Vector2(966, 150)
 	enemy_art.size = Vector2(288, 266)
 	parent.add_child(enemy_art)
@@ -103,7 +105,6 @@ func _build_enemy_stage(parent: Control) -> void:
 
 func _build_player_stage(parent: Control) -> void:
 	player_art = ArtPlaceholder.new()
-	player_art.setup(&"player_default", "the party's fighter, torch in one hand, weapon in the other", Vector2(320, 296))
 	player_art.position = Vector2(110, 206)
 	player_art.size = Vector2(320, 296)
 	parent.add_child(player_art)
@@ -192,8 +193,26 @@ func start(p_encounter: CombatEncounter) -> void:
 	encounter.combat_ended.connect(_on_combat_ended)
 	result_container.hide()
 	turn_ui_container.show()
+	_apply_setting()
 	encounter.start_player_turn()
 	_refresh()
+
+func _apply_setting() -> void:
+	var floor_number: int = RunState.current_floor
+	eyebrow_label.text = "Floor %d · Combat" % (floor_number + 1)
+	if floor_number == 0:
+		background.setup(&"combat_backdrop_forest", FOREST_BACKDROP_BRIEF, Vector2(1440, 560))
+	else:
+		background.setup(&"combat_backdrop_dungeon", DUNGEON_BACKDROP_BRIEF, Vector2(1440, 560))
+	background.size = Vector2(1440, 560)
+
+	var enemy_name: String = encounter.enemy.display_name
+	enemy_art.setup(StringName("enemy_" + enemy_name.to_snake_case()), "%s, ready to fight" % enemy_name, Vector2(288, 266))
+	enemy_art.size = Vector2(288, 266)
+
+	var player_name: String = encounter.player.display_name
+	player_art.setup(StringName("player_" + player_name.to_snake_case()), "%s, weapon ready" % player_name, Vector2(320, 296))
+	player_art.size = Vector2(320, 296)
 
 func _refresh() -> void:
 	player_panel.display(encounter.player, UiTokens.MOSS)

@@ -174,7 +174,9 @@ func build_encounter_for_node(node: MapNode) -> CombatEncounter:
 		MapNode.NodeType.BOSS:
 			enemy_res = CaveRatContent.get_boss_enemy_resource()
 		_:
-			enemy_res = CaveRatContent.get_enemy_resource()
+			# Floor 0 is the forest at the dungeon's mouth; the cave rats
+			# wait inside, from floor 1 on.
+			enemy_res = ForestContent.get_enemy_resource() if node.floor == 0 else CaveRatContent.get_enemy_resource()
 	var enemy := ActorFactory.build_enemy_actor(enemy_res)
 	return CombatEncounter.new(player, deck, enemy, enemy_res.moves, rng)
 
