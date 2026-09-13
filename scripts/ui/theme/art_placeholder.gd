@@ -1,9 +1,11 @@
 extends PanelContainer
 class_name ArtPlaceholder
 
-# Shows res://assets/art/<art_id>.png when it exists; otherwise a quiet
-# panel carrying the image brief, so generated art drops in later with
-# no code change. See assets/art/README.md.
+# Shows res://assets/art/<art_id>.svg or .png when either exists (svg is
+# checked first — the traced-from-photo pipeline's output; see
+# docs/superpowers/specs/2026-09-13-creature-art-pipeline-design.md);
+# otherwise a quiet panel carrying the image brief, so art drops in later
+# with no code change. See assets/art/README.md.
 
 const ART_DIR := "res://assets/art/"
 
@@ -19,8 +21,8 @@ func setup(art_id: StringName, brief: String, art_size: Vector2) -> void:
 		child.free()
 	label = null
 	texture_rect = null
-	var path: String = ART_DIR + String(art_id) + ".png"
-	if ResourceLoader.exists(path):
+	var path := _resolve_art_path(art_id)
+	if path != "":
 		has_art = true
 		add_theme_stylebox_override(&"panel", StyleBoxEmpty.new())
 		texture_rect = TextureRect.new()
@@ -43,3 +45,12 @@ func setup(art_id: StringName, brief: String, art_size: Vector2) -> void:
 	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	add_child(label)
+
+func _resolve_art_path(art_id: StringName) -> String:
+	var svg_path: String = ART_DIR + String(art_id) + ".svg"
+	if ResourceLoader.exists(svg_path):
+		return svg_path
+	var png_path: String = ART_DIR + String(art_id) + ".png"
+	if ResourceLoader.exists(png_path):
+		return png_path
+	return ""

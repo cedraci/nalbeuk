@@ -54,3 +54,11 @@ func test_art_placeholder_can_be_set_up_twice():
 	art.setup(&"b", "second", Vector2(20, 20))
 	assert_eq(art.label.text, "[art: second]")
 	assert_eq(art.get_child_count(), 1, "setup() replaces its previous content.")
+
+func test_art_placeholder_resolves_an_svg_before_a_png():
+	var art := ArtPlaceholder.new()
+	add_child_autofree(art)
+	art.setup(&"_test_fixture", "a fixture creature", Vector2(40, 40))
+	assert_true(art.has_art)
+	assert_not_null(art.texture_rect)
+	assert_null(art.label)
