@@ -33,7 +33,7 @@ func test_start_shows_turn_ui_and_hides_result():
 	scene.start(encounter)
 	assert_true(scene.turn_ui_container.visible)
 	assert_false(scene.result_container.visible)
-	assert_eq(scene.player_panel.hp_label.text, "HP: 20 / 20")
+	assert_eq(scene.player_panel.hp_bar.value_label.text, "20 / 20")
 
 func test_playing_a_card_updates_the_view():
 	var scene := CombatScene.new()
@@ -45,7 +45,7 @@ func test_playing_a_card_updates_the_view():
 	scene.start(encounter)
 	var card := encounter.hand[0]
 	scene.hand_view.card_clicked.emit(card)
-	assert_eq(scene.enemy_panel.hp_label.text, "HP: 17 / 20")
+	assert_eq(scene.enemy_panel.hp_bar.value_label.text, "17 / 20")
 
 func test_combat_ended_shows_result_overlay_with_win_message():
 	var scene := CombatScene.new()
@@ -82,8 +82,8 @@ func test_end_turn_button_starts_new_player_turn_when_combat_continues():
 	var encounter := CombatEncounter.new(player, deck, enemy, [_make_attack_move(3)])
 	scene.start(encounter)
 	scene.end_turn_button.pressed.emit()
-	assert_eq(scene.energy_label.text, "Energy: 3 / 3")
-	assert_eq(scene.player_panel.hp_label.text, "HP: 17 / 20")
+	assert_eq(scene.energy_value_label.text, "3/3")
+	assert_eq(scene.player_panel.hp_bar.value_label.text, "17 / 20")
 
 func test_end_turn_button_shows_result_overlay_with_loss_message():
 	var scene := CombatScene.new()
@@ -97,6 +97,32 @@ func test_end_turn_button_shows_result_overlay_with_loss_message():
 	assert_eq(scene.result_label.text, "You Lost")
 	assert_true(scene.result_container.visible)
 	assert_false(scene.turn_ui_container.visible)
+
+func test_relic_row_shows_one_chip_per_unlocked_relic():
+	RunState.start_new_run(DwarfContent.get_class_resource())
+	RunState.unlocked_relics = [&"whetstone", &"reinforced_buckle"]
+	var scene := CombatScene.new()
+	add_child_autofree(scene)
+	var player := _make_actor(20)
+	var enemy := _make_actor(20)
+	var deck: Array[CardResource] = [_make_strike(3)]
+	var encounter := CombatEncounter.new(player, deck, enemy, [_make_attack_move(3)])
+	scene.start(encounter)
+	assert_eq(scene.relic_row.get_child_count(), 2)
+	assert_eq(scene.relic_row.get_child(0).label.text, "Whetstone")
+
+func test_pile_counts_reflect_draw_and_discard():
+	var scene := CombatScene.new()
+	add_child_autofree(scene)
+	var player := _make_actor(20)
+	var enemy := _make_actor(20)
+	var deck: Array[CardResource] = [_make_strike(3), _make_strike(3), _make_strike(3)]
+	var encounter := CombatEncounter.new(player, deck, enemy, [_make_attack_move(3)])
+	scene.start(encounter)
+	assert_eq(scene.draw_count_label.text, "0")
+	assert_eq(scene.discard_count_label.text, "0")
+	scene.hand_view.card_clicked.emit(encounter.hand[0])
+	assert_eq(scene.discard_count_label.text, "1")
 
 func test_potion_row_hidden_when_no_potions():
 	RunState.start_new_run(DwarfContent.get_class_resource())

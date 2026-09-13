@@ -14,7 +14,7 @@ func test_fonts_load_as_variations_of_the_bundled_files():
 
 func test_theme_defines_the_button_variations():
 	var theme := ThemeBuilder.build()
-	for variation in [&"Primary", &"Ghost", &"Danger", &"NodeLocked", &"NodeVisited", &"NodeOpen", &"NodeCurrent"]:
+	for variation in [&"Primary", &"Ghost", &"Danger", &"Card", &"NodeLocked", &"NodeVisited", &"NodeOpen", &"NodeCurrent"]:
 		assert_eq(theme.get_type_variation_base(variation), &"Button", String(variation))
 		assert_true(theme.has_stylebox(&"normal", variation), "%s has a normal stylebox" % variation)
 

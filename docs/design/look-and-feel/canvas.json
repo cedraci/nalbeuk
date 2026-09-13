@@ -166,6 +166,14 @@
   ],
   "annotations": [
     {
+      "id": "combat-battlefield-note",
+      "x": 3040,
+      "y": 0,
+      "w": 300,
+      "page": "torchlit",
+      "text": "Combat — battlefield pass.\n\nRestaged as a Spire-style battlefield instead of a stat-panel row: player foreground bottom-left, enemy back-right with intent badge over its head, HP/Block/Strength collapsed into a pill under each. Energy + draw pile moved to bottom-left by the player; discard + End turn to bottom-right. Cards gained a type-colour top bar (Strike/Technique/Trait) and full-bleed art. Relic tray is new — Whetstone + Reinforced Buckle, both real relics from DwarfRelics."
+    },
+    {
       "id": "torchlit-brief",
       "x": 3120,
       "y": 0,

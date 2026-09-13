@@ -112,6 +112,10 @@ static func _build_buttons(theme: Theme) -> void:
 	var blood := UiTokens.BLOOD
 	_button_styles(theme, &"Danger", Color(blood.r, blood.g, blood.b, 0.08), Color(blood.r, blood.g, blood.b, 0.6), 1, UiTokens.RADIUS_BUTTON, 22, 12)
 
+	theme.set_type_variation(&"Card", &"Button")
+	_button_colors(theme, &"Card", UiTokens.TEXT)
+	_button_styles(theme, &"Card", UiTokens.SURFACE_2, UiTokens.ember(0.35), 1, UiTokens.RADIUS_CARD, 0, 0)
+
 	_node_variation(theme, &"NodeLocked", Color("#1a1613"), Color(1, 1, 1, 0.06), 1, Color("#4a423a"))
 	_node_variation(theme, &"NodeVisited", Color("#221c17"), UiTokens.ember(0.18), 1, UiTokens.DIM)
 	_node_variation(theme, &"NodeOpen", UiTokens.SURFACE_2, UiTokens.EMBER, 1, UiTokens.EMBER, 14, UiTokens.ember(0.25))
