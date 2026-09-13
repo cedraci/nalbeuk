@@ -14,7 +14,7 @@ var has_art: bool = false
 var label: Label = null
 var texture_rect: TextureRect = null
 
-func setup(art_id: StringName, brief: String, art_size: Vector2, use_torchlit_shader: bool = false) -> void:
+func setup(art_id: StringName, brief: String, art_size: Vector2, use_torchlit_shader: bool = false, accent_markers: Array[Vector2] = []) -> void:
 	custom_minimum_size = art_size
 	for child in get_children():
 		remove_child(child)
@@ -35,6 +35,10 @@ func setup(art_id: StringName, brief: String, art_size: Vector2, use_torchlit_sh
 			var mat := ShaderMaterial.new()
 			mat.shader = TORCHLIT_SHADER
 			texture_rect.material = mat
+		for marker in accent_markers:
+			var dot := ArtAccentDot.new()
+			dot.position = marker * art_size - dot.custom_minimum_size / 2.0
+			add_child(dot)
 		return
 	has_art = false
 	var box := StyleBoxFlat.new()

@@ -74,3 +74,25 @@ func test_art_placeholder_skips_the_shader_by_default():
 	add_child_autofree(art)
 	art.setup(&"_test_fixture", "a fixture creature", Vector2(40, 40))
 	assert_null(art.texture_rect.material)
+
+func test_art_accent_dot_ignores_the_mouse_and_pulses():
+	var dot := ArtAccentDot.new(UiTokens.RUNE, 6.0)
+	add_child_autofree(dot)
+	assert_eq(dot.mouse_filter, Control.MOUSE_FILTER_IGNORE)
+	assert_eq(dot.custom_minimum_size, Vector2(12, 12))
+	assert_true(dot.is_pulsing())
+
+func test_art_placeholder_adds_a_glow_dot_per_accent_marker():
+	var art := ArtPlaceholder.new()
+	add_child_autofree(art)
+	var markers: Array[Vector2] = [Vector2(0.5, 0.5)]
+	art.setup(&"_test_fixture", "a fixture creature", Vector2(40, 40), false, markers)
+	assert_eq(art.get_child_count(), 2, "texture_rect plus one accent dot")
+	var dot: ArtAccentDot = art.get_child(1)
+	assert_eq(dot.position, Vector2(20, 20) - dot.custom_minimum_size / 2.0)
+
+func test_art_placeholder_adds_no_dots_without_markers():
+	var art := ArtPlaceholder.new()
+	add_child_autofree(art)
+	art.setup(&"_test_fixture", "a fixture creature", Vector2(40, 40))
+	assert_eq(art.get_child_count(), 1, "just the texture_rect")
