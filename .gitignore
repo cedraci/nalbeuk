@@ -1,6 +1,7 @@
 .godot/
 .import/
 /.superpowers/
+/assets/art_source/
 /.worktrees/
 export_presets.cfg
 *.translation
