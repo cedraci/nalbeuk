@@ -29,13 +29,17 @@ once the pilot lands.
 
 **In scope:**
 
-- The production pipeline: reference photo → cropped → posterized (~20
-  colour buckets) → darkened/desaturated → vectorized (`vtracer`) →
-  tracked SVG.
+- The production pipeline: reference photo → cropped to the art's
+  display aspect ratio → subject matted off its background (`rembg`)
+  onto a synthetic magenta key colour → posterized (~20 colour
+  buckets) → darkened/desaturated → vectorized (`vtracer`) → tracked
+  SVG.
 - `ArtPlaceholder` extended to look up `.svg` (in addition to today's
   `.png`).
 - A shared `torchlit_creature.gdshader`: ember rim-light along one
-  global light direction, driven by the traced texture's alpha edge.
+  global light direction, driven by the silhouette edge the shader
+  recovers by chroma-keying the matte's magenta background (the traced
+  SVG itself is fully opaque — `vtracer` cannot carry alpha).
 - A small per-creature accent-marker convention (eye / mouth position)
   for glowing highlight dots, defined alongside existing content
   scripts (pattern: `forest_content.gd`).
@@ -63,15 +67,29 @@ For each creature or backdrop:
 
 1. **Source one reference photo.** Supplied by the user (or a
    public-domain wildlife/scene photo). Not AI-generated.
-2. **Crop** to the subject, removing excess background.
-3. **Posterize**: quantize to ~20–22 flat colours (`PIL.Image.quantize`,
+2. **Crop** to the subject, removing excess background. The crop must
+   match the art's display aspect ratio (`ArtPlaceholder`'s
+   `TextureRect` uses `STRETCH_SCALE`, so a mismatched canvas is
+   visibly squeezed). The Coypu's 288×266 crop of `docs/ragondin.jpg`
+   is `(248, 9, 2264, 1871)` → 2016×1862.
+3. **Matte** the subject off its background with `rembg` (U2-Net) and
+   composite it onto pure magenta, `#ff00ff` — a colour that cannot
+   occur in a reference photo or in this game's palette. Downscale to
+   the working resolution *before* compositing and harden the matte to
+   a binary mask there, so no pixel is ever a magenta/subject blend.
+   The key colour is what the shader chroma-keys at runtime to recover
+   the silhouette; carrying real PNG alpha through `vtracer` is not an
+   option (its CLI has no alpha handling at all).
+4. **Posterize**: quantize to ~20–22 flat colours (`PIL.Image.quantize`,
    `MEDIANCUT`, no dithering — dithering defeats flat-region tracing).
-4. **Darken/desaturate** every quantized colour into the "dark stone"
+5. **Darken/desaturate** every quantized colour into the "dark stone"
    value range via an HSV remap: `s' = min(s * 0.85, 0.6)`,
    `v' = min(v * 0.62 + 0.04, 0.55)`. This is a fixed formula applied
    uniformly, not eyeballed per creature, so every asset lands in the
-   same tonal register automatically.
-5. **Vectorize** the posterized+darkened image with `vtracer`:
+   same tonal register automatically — except the key colour's palette
+   entry, which is left undarkened (and snapped back to exact magenta)
+   so the shader's chroma key stays a precise match.
+6. **Vectorize** the posterized+darkened image with `vtracer`:
    `--colormode color --hierarchical stacked --mode spline
    --filter_speckle 5 --color_precision 8 --corner_threshold 80
    --segment_length 3.5 --splice_threshold 45`. Spline mode and a low
@@ -79,14 +97,16 @@ For each creature or backdrop:
    read as the real animal rather than a blocky mosaic — this was the
    difference between a rejected first pass (8 colours, polygon mode,
    heavy speckle filtering) and the approved result.
-6. The resulting SVG is the tracked game asset — no rasterization step
+7. The resulting SVG is the tracked game asset — no rasterization step
    needed (see §3).
 
 **Tooling dependency:** `vtracer`, installed via `cargo install
 vtracer` (Rust toolchain, already present on this machine). **Do not**
 use the `vtracer` PyPI wheel — it segfaults on Python 3.14 even on
 trivial input; the native cargo-built CLI is the one that works.
-Pillow (`pip install pillow`) does the crop/posterize/darken step.
+Pillow (`pip install pillow`) does the crop/posterize/darken step, and
+`rembg` with a CPU backend (`pip install "rembg[cpu]"`) does the
+matting — its model downloads to the user cache on first run.
 
 ## 3. Godot integration
 
@@ -102,11 +122,14 @@ The rim-light/glow treatment is a separate shader layer, not baked
 into the traced art:
 
 - **`torchlit_creature.gdshader`**, applied as the material on the
-  `TextureRect` `ArtPlaceholder` creates when art exists. Reads the
-  texture's alpha channel to find the silhouette edge and brightens
-  the edge facing one fixed light-direction constant (matching the
-  "one warm light source" rule already established for screens),
-  tinted with `UiTokens.EMBER`.
+  `TextureRect` `ArtPlaceholder` creates when art exists. Chroma-keys
+  the matte's magenta background (`key_color`/`key_tolerance`) to
+  derive the subject's alpha — the traced texture has none of its own
+  — then uses that to find the silhouette edge and brighten the edge
+  facing one fixed light-direction constant (matching the "one warm
+  light source" rule already established for screens), tinted with
+  `UiTokens.EMBER`. The same derived alpha is written out as the
+  fragment's alpha, so the key colour never renders.
 - **Accent markers**: 2–3 `Vector2` positions per creature (eye,
   mouth/teeth) stored as constants alongside that creature's content
   definition (e.g. `forest_content.gd`), each rendered as a small
