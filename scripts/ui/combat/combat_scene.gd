@@ -207,7 +207,8 @@ func _apply_setting() -> void:
 	background.size = Vector2(1440, 560)
 
 	var enemy_name: String = encounter.enemy.display_name
-	enemy_art.setup(StringName("enemy_" + enemy_name.to_snake_case()), "%s, ready to fight" % enemy_name, Vector2(288, 266))
+	var enemy_art_id := StringName("enemy_" + enemy_name.to_snake_case())
+	enemy_art.setup(enemy_art_id, "%s, ready to fight" % enemy_name, Vector2(288, 266), true, CreatureArtAccents.markers_for(enemy_art_id))
 	enemy_art.size = Vector2(288, 266)
 
 	var player_name: String = encounter.player.display_name
