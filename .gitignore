@@ -1,5 +1,6 @@
 .godot/
 .import/
+/.superpowers/
 export_presets.cfg
 *.translation
 
