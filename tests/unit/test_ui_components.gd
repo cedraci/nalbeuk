@@ -85,14 +85,35 @@ func test_art_accent_dot_ignores_the_mouse_and_pulses():
 func test_art_placeholder_adds_a_glow_dot_per_accent_marker():
 	var art := ArtPlaceholder.new()
 	add_child_autofree(art)
+	var markers: Array[Vector2] = [Vector2(0.5, 0.5), Vector2(0.25, 0.75)]
+	art.setup(&"_test_fixture", "a fixture creature", Vector2(40, 40), false, markers)
+	assert_eq(art.get_child_count(), 2, "texture_rect plus the accent overlay")
+	assert_not_null(art.accents_overlay)
+	assert_eq(art.accents_overlay.mouse_filter, Control.MOUSE_FILTER_IGNORE)
+	assert_eq(art.accents_overlay.get_child_count(), 2, "one accent dot per marker")
+	assert_true(art.accents_overlay.get_child(0) is ArtAccentDot)
+
+func test_art_placeholder_dot_positions_survive_the_layout_pass():
+	# PanelContainer sorts its children via fit_child_in_rect(), which would
+	# flatten a dot parented straight to it. Await a real frame so the sort
+	# actually runs before asserting — a synchronous assert here passes even
+	# when the layout destroys the position afterwards.
+	var art := ArtPlaceholder.new()
+	add_child_autofree(art)
 	var markers: Array[Vector2] = [Vector2(0.5, 0.5)]
 	art.setup(&"_test_fixture", "a fixture creature", Vector2(40, 40), false, markers)
-	assert_eq(art.get_child_count(), 2, "texture_rect plus one accent dot")
-	var dot: ArtAccentDot = art.get_child(1)
-	assert_eq(dot.position, Vector2(20, 20) - dot.custom_minimum_size / 2.0)
+	var dot: ArtAccentDot = art.accents_overlay.get_child(0)
+	var expected_position: Vector2 = Vector2(20, 20) - dot.custom_minimum_size / 2.0
+	await get_tree().process_frame
+	await get_tree().process_frame
+	assert_eq(dot.position, expected_position, "the dot keeps its hand-placed position")
+	assert_eq(dot.size, dot.custom_minimum_size, "the dot is not stretched to fill the panel")
+	assert_eq(art.accents_overlay.size, art.size, "the overlay covers the whole art area")
+	assert_eq(art.accents_overlay.position, Vector2.ZERO, "the overlay sits at the art's origin")
 
 func test_art_placeholder_adds_no_dots_without_markers():
 	var art := ArtPlaceholder.new()
 	add_child_autofree(art)
 	art.setup(&"_test_fixture", "a fixture creature", Vector2(40, 40))
 	assert_eq(art.get_child_count(), 1, "just the texture_rect")
+	assert_null(art.accents_overlay, "no overlay when there are no markers")
