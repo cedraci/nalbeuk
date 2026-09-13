@@ -8,10 +8,13 @@ class_name CreatureArtAccents
 # docs/superpowers/specs/2026-09-13-creature-art-pipeline-design.md.
 
 const _MARKERS: Dictionary = {
-	&"enemy_coypu": [Vector2(0.34, 0.40), Vector2(0.30, 0.55)] as Array[Vector2],
+	# Eye, then nose/mouth, read off the 288x266 crop of the reference photo.
+	&"enemy_coypu": [Vector2(0.55, 0.26), Vector2(0.71, 0.36)] as Array[Vector2],
 }
 
 static func markers_for(art_id: StringName) -> Array[Vector2]:
 	if _MARKERS.has(art_id):
-		return _MARKERS[art_id] as Array[Vector2]
+		# duplicate(): `const` is not deep-immutable in GDScript, so handing
+		# out the stored Array would let a caller mutate this lookup table.
+		return (_MARKERS[art_id] as Array[Vector2]).duplicate()
 	return [] as Array[Vector2]
