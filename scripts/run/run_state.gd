@@ -17,6 +17,13 @@ const ELITE_XP_REWARD := 30
 const BOSS_XP_REWARD := 50
 const MAX_POTIONS := 2
 
+# Each Act is its own branching node map with its own floor numbering
+# (per the run/map-structure design), so floor 0 means "the first floor
+# of the current Act" even once Act 2/3 exist, not "the run's first
+# floor" — only one Act is generated today, so in practice it's the same
+# thing for now.
+const ACT_FIRST_FLOOR := 0
+
 var class_resource: ClassResource
 var persistent_stats: PersistentStats
 var deck: Array[CardResource] = []
@@ -174,9 +181,9 @@ func build_encounter_for_node(node: MapNode) -> CombatEncounter:
 		MapNode.NodeType.BOSS:
 			enemy_res = CaveRatContent.get_boss_enemy_resource()
 		_:
-			# Floor 0 is the forest at the dungeon's mouth; the cave rats
-			# wait inside, from floor 1 on.
-			enemy_res = ForestContent.get_enemy_resource() if node.floor == 0 else CaveRatContent.get_enemy_resource()
+			# An Act's first floor is the forest at its dungeon's mouth;
+			# the cave rats wait inside, from its second floor on.
+			enemy_res = ForestContent.get_enemy_resource() if node.floor == ACT_FIRST_FLOOR else CaveRatContent.get_enemy_resource()
 	var enemy := ActorFactory.build_enemy_actor(enemy_res)
 	return CombatEncounter.new(player, deck, enemy, enemy_res.moves, rng)
 

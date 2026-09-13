@@ -1,9 +1,10 @@
 extends RefCounted
 class_name ForestContent
 
-# The party's very first fight happens at the forest's edge, before the
-# dungeon entrance proper — see docs/design/look-and-feel/Combat.dc.html.
-# Wired to floor 0's regular combat nodes in RunState.build_encounter_for_node.
+# An Act's first fight happens at the forest's edge, before the dungeon
+# entrance proper — see docs/design/look-and-feel/Combat.dc.html. Wired
+# to an Act's first-floor combat nodes in RunState.build_encounter_for_node
+# (only one Act exists today, so this is the run's first fight for now).
 
 static func get_enemy_resource() -> EnemyResource:
 	var enemy_res := EnemyResource.new()

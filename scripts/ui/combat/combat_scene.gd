@@ -200,7 +200,7 @@ func start(p_encounter: CombatEncounter) -> void:
 func _apply_setting() -> void:
 	var floor_number: int = RunState.current_floor
 	eyebrow_label.text = "Floor %d · Combat" % (floor_number + 1)
-	if floor_number == 0:
+	if floor_number == RunState.ACT_FIRST_FLOOR:
 		background.setup(&"combat_backdrop_forest", FOREST_BACKDROP_BRIEF, Vector2(1440, 560))
 	else:
 		background.setup(&"combat_backdrop_dungeon", DUNGEON_BACKDROP_BRIEF, Vector2(1440, 560))
