@@ -8,10 +8,10 @@ class_name ForestContent
 
 static func get_enemy_resource() -> EnemyResource:
 	var enemy_res := EnemyResource.new()
-	enemy_res.id = &"forest_wolf"
-	enemy_res.display_name = "Forest Wolf"
+	enemy_res.id = &"coypu"
+	enemy_res.display_name = "Coypu"
 	enemy_res.max_hp = 16
-	enemy_res.moves = [_make_bite_move(), _make_howl_move()]
+	enemy_res.moves = [_make_bite_move(), _make_hiss_move()]
 	return enemy_res
 
 static func _make_bite_move() -> EnemyMove:
@@ -20,11 +20,11 @@ static func _make_bite_move() -> EnemyMove:
 	var effect := DamageEffect.new()
 	effect.amount = 4
 	move.effects = [effect]
-	move.description = "The wolf snaps at you with bared teeth."
+	move.description = "The coypu lunges, its orange incisors bared."
 	move.display_value = 4
 	return move
 
-static func _make_howl_move() -> EnemyMove:
+static func _make_hiss_move() -> EnemyMove:
 	var move := EnemyMove.new()
 	move.intent_type = EnemyMove.IntentType.BUFF
 	var effect := ApplyStatusEffect.new()
@@ -32,6 +32,6 @@ static func _make_howl_move() -> EnemyMove:
 	effect.stacks = 1
 	effect.apply_to_source = true
 	move.effects = [effect]
-	move.description = "The wolf howls, its pack instinct sharpening its bite."
+	move.description = "The coypu hisses, puffing up to guard its burrow."
 	move.display_value = 1
 	return move

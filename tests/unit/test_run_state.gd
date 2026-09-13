@@ -20,7 +20,7 @@ func test_build_encounter_for_node_uses_forest_enemy_on_floor_zero():
 	RunState.start_new_run(DwarfContent.get_class_resource())
 	var combat_node := MapNode.new(0, MapNode.NodeType.COMBAT, 0)
 	var encounter := RunState.build_encounter_for_node(combat_node)
-	assert_eq(encounter.enemy.display_name, "Forest Wolf")
+	assert_eq(encounter.enemy.display_name, "Coypu")
 
 func test_build_encounter_for_node_uses_cave_rat_from_floor_one_on():
 	RunState.start_new_run(DwarfContent.get_class_resource())
