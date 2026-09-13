@@ -8,12 +8,13 @@ class_name ArtPlaceholder
 # with no code change. See assets/art/README.md.
 
 const ART_DIR := "res://assets/art/"
+const TORCHLIT_SHADER := preload("res://scripts/ui/theme/torchlit_creature.gdshader")
 
 var has_art: bool = false
 var label: Label = null
 var texture_rect: TextureRect = null
 
-func setup(art_id: StringName, brief: String, art_size: Vector2) -> void:
+func setup(art_id: StringName, brief: String, art_size: Vector2, use_torchlit_shader: bool = false) -> void:
 	custom_minimum_size = art_size
 	for child in get_children():
 		remove_child(child)
@@ -30,6 +31,10 @@ func setup(art_id: StringName, brief: String, art_size: Vector2) -> void:
 		texture_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 		texture_rect.stretch_mode = TextureRect.STRETCH_SCALE
 		add_child(texture_rect)
+		if use_torchlit_shader:
+			var mat := ShaderMaterial.new()
+			mat.shader = TORCHLIT_SHADER
+			texture_rect.material = mat
 		return
 	has_art = false
 	var box := StyleBoxFlat.new()

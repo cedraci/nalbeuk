@@ -62,3 +62,15 @@ func test_art_placeholder_resolves_an_svg_before_a_png():
 	assert_true(art.has_art)
 	assert_not_null(art.texture_rect)
 	assert_null(art.label)
+
+func test_art_placeholder_applies_the_torchlit_shader_when_requested():
+	var art := ArtPlaceholder.new()
+	add_child_autofree(art)
+	art.setup(&"_test_fixture", "a fixture creature", Vector2(40, 40), true)
+	assert_true(art.texture_rect.material is ShaderMaterial)
+
+func test_art_placeholder_skips_the_shader_by_default():
+	var art := ArtPlaceholder.new()
+	add_child_autofree(art)
+	art.setup(&"_test_fixture", "a fixture creature", Vector2(40, 40))
+	assert_null(art.texture_rect.material)
